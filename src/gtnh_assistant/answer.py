@@ -37,6 +37,11 @@ MULTI_ARTICLE = re.compile(
     r"path|route|chain|compare|comparison|versus|vs)\b",
     re.I,
 )
+# Small models follow instructions placed last more reliably; without this they sometimes drop citations.
+CITE_REMINDER = (
+    "Answer the question using only the wiki evidence above. Put the source ID in square brackets, "
+    "for example [S1], right after every fact you take from it."
+)
 # Approximate tokenizer: leave headroom because Qwen/Llama tokenizers count differently from cl100k.
 CONTEXT_MARGIN = 0.85
 PROMPT_OVERHEAD = 300
@@ -118,6 +123,7 @@ class Answerer:
         """Evidence must fit in the model's context window together with everything else."""
         fixed = (
             tokens(SYSTEM)
+            + tokens(CITE_REMINDER)
             + tokens(json.dumps(SEARCH_TOOL))
             + tokens(question)
             + tokens(history_text)
@@ -158,13 +164,15 @@ class Answerer:
         remaining = budget
         selected = {}
 
-        def evidence(query, cap=None):
+        def evidence(query, cap=None, only_article=None):
             nonlocal remaining
             spend = remaining if cap is None else min(remaining, cap)
             entries = []
             searched = time.perf_counter()
             found = self.index.search(query, limit=self.settings.retrieval_limit)
             result.retrieval_ms += (time.perf_counter() - searched) * 1000
+            if only_article is not None:
+                found = [c for c in found if c.get("article_id") == only_article]
             for c in found:
                 if c["id"] in selected:
                     continue
@@ -198,16 +206,16 @@ class Answerer:
                 "Index articles or refine the question."
             )
             return result
-        if MULTI_ARTICLE.search(question):
-            # Pull in articles the first passages point to (e.g. prerequisites), using at most a third
-            # of the budget so the question's main article keeps priority.
+        if self.settings.linked_articles and MULTI_ARTICLE.search(question):
+            # Optionally pull in articles the first passages point to (e.g. prerequisites). Off by default:
+            # in the first benchmark it added unrelated articles and was never cited usefully.
             seen = {s.get("article_id") for s in result.sources}
             linked = [
-                name
+                (article_id, name)
                 for article_id, name in self._entities(" ".join(s["text"] for s in result.sources)).items()
                 if article_id not in seen
-            ][:2]
-            extra = [evidence(name, cap=budget // 6) for name in linked]
+            ][: self.settings.linked_articles]
+            extra = [evidence(name, cap=budget // 6, only_article=article_id) for article_id, name in linked]
             initial += "".join("\n\n" + e for e in extra if e and not e.startswith("No additional"))
 
         messages = [
@@ -215,7 +223,7 @@ class Answerer:
             {
                 "role": "user",
                 "content": f"Recent conversation (context only):\n{history_text}\n\n"
-                f"Question: {question}\n\nWiki evidence:\n{initial}",
+                f"Question: {question}\n\nWiki evidence:\n{initial}\n\n{CITE_REMINDER}",
             },
         ]
         options = {

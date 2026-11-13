@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     output_tokens: int = Field(default=1000, ge=200, le=8000)
     retrieval_limit: int = Field(default=8, ge=1, le=30)
     search_rounds: int = Field(default=2, ge=0, le=3)
+    # Extra articles mentioned by the first passages, for progression-style questions. 0 = off.
+    linked_articles: int = Field(default=0, ge=0, le=3)
     # Local inference through Ollama. There is no remote or paid fallback.
     ollama_host: str = Field(
         default="http://127.0.0.1:11434", validation_alias=AliasChoices("GTNH_OLLAMA_HOST", "OLLAMA_HOST")

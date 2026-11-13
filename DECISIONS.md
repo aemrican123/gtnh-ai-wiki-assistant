@@ -2,6 +2,19 @@
 
 Newest first. Each entry: decision, reason, consequences.
 
+## 2026-11-13 — Linked-article expansion off by default; citation reminder added
+
+**Decision.** `GTNH_LINKED_ARTICLES` defaults to 0 (the expansion from the earlier retrieval decision is now
+opt-in, and when on it keeps only chunks of the linked article). A short citation instruction now ends the
+user prompt.
+
+**Reason.** First `qwen3.5:4b` benchmark (11 questions): expansion added unrelated articles (Portable Scanner,
+AR Glasses, Charging for an EBF power question; Hot Isostatic Pressurization Unit and Plasma Forge for a
+coil question), pushed one prompt against the context limit, and its passages were cited only once, wrongly.
+Two of 11 answers (EBF construction, Cleanroom) had correct-looking content but no [S#] citations.
+
+**Open.** Re-run `scripts/benchmark_llm.py` and confirm every answer cites sources.
+
 ## 2026-11-13 — Default model changed to `qwen3.5:4b` after measurement
 
 **Decision.** `GTNH_LLM_MODEL` now defaults to `qwen3.5:4b`. `qwen3.5:9b` stays usable by setting it in `.env`.
