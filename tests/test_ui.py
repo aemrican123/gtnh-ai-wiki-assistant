@@ -18,7 +18,7 @@ def test_empty_ui_reports_ollama_down_and_clears_history(tmp_path, monkeypatch):
     assert app.title[0].value == "GTNH Field Guide"
     assert any("knowledge base is empty" in item.value for item in app.info)
     assert any("Ollama is not reachable" in item.value for item in app.error)
-    assert app.selectbox[0].value == "qwen3.5:9b"
+    assert app.selectbox[0].value == "qwen3.5:4b"
     assert not any("OpenAI" in item.value for item in app.caption)
     app.session_state.messages = [{"role": "user", "content": "old question"}]
     app.run()

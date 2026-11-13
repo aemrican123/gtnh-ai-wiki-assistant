@@ -2,6 +2,16 @@
 
 Newest first. Each entry: decision, reason, consequences.
 
+## 2026-11-13 — Default model changed to `qwen3.5:4b` after measurement
+
+**Decision.** `GTNH_LLM_MODEL` now defaults to `qwen3.5:4b`. `qwen3.5:9b` stays usable by setting it in `.env`.
+
+**Reason.** `cli doctor` on the RTX 4070 Laptop (8 GB), Ollama 0.40.16, `num_ctx=8192`: `qwen3.5:9b` loaded as
+6.39 GB with only 5.60 GB (88%) in GPU memory; total GPU memory in use 7,413 / 8,188 MB. Generation ran at
+1.1 tokens/s, first token 71 s (42.5 s of it model load). The CPU-resident share makes it far too slow for chat.
+
+**Open.** Confirm `qwen3.5:4b` is 100% on GPU and measure it with `scripts/benchmark_llm.py`.
+
 ## 2026-11-13 — Migrate answer generation from OpenAI to local Ollama
 
 **Decision.** Answers are generated only by a local model served by Ollama. The OpenAI client, API-key
