@@ -24,7 +24,7 @@ Not yet verified (needs the laptop):
   citation validity, follow-up and unanswerable-question behaviour.
 - Offline test (Wi-Fi off), `start_gtnh.bat` / `stop_gtnh.bat` behaviour.
 
-## React + Base UI interface (built 2026-11-14, not yet run on the laptop)
+## React + Base UI interface (built 2026-11-14; owner confirmed it runs on the laptop)
 - `src/gtnh_assistant/api.py`: FastAPI + uvicorn on 127.0.0.1:8501. `GET /api/status` (Ollama, models, GPU
   residency, nvidia-smi VRAM, knowledge-base counts, job state, `.env` defaults; Ollama/GPU cached 10 s,
   `?refresh=true` bypasses), `POST /api/ask` (NDJSON stream: `status`, `token`, `reset`, `final`, `error`),
