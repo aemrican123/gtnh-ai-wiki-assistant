@@ -2,6 +2,16 @@
 
 Newest first. Each entry: decision, reason, consequences.
 
+## 2026-11-13 — A robots-disallowed URL is skipped, not fatal
+
+**Decision.** `Disallowed` (a subclass of `AccessDenied`) marks a single URL that robots.txt or the redirect
+policy rules out; the crawl records it as `skipped` and continues. HTTP 401/403, unreadable robots.txt and
+sitemap problems still stop collection.
+
+**Reason.** Collection stopped on `robots.txt disallows .../Special:MyLanguage/GT_Tools#Screwdriver`: an
+ordinary article redirects to a `Special:` page the wiki forbids crawlers to fetch. Refusing that one fetch
+is correct; stopping the whole crawl was not. Skipped URLs are re-checked (without a request) on updates.
+
 ## 2026-11-13 — Linked-article expansion off by default; citation reminder added
 
 **Decision.** `GTNH_LINKED_ARTICLES` defaults to 0 (the expansion from the earlier retrieval decision is now
