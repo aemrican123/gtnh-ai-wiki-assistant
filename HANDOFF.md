@@ -24,6 +24,21 @@ Not yet verified (needs the laptop):
   citation validity, follow-up and unanswerable-question behaviour.
 - Offline test (Wi-Fi off), `start_gtnh.bat` / `stop_gtnh.bat` behaviour.
 
+## Next: React + Base UI interface (approved by the owner, 2026-11-14)
+Not started. The previous session could not install npm/pip packages, so the owner is enabling package installs
+and continuing in a new chat. Plan:
+- `src/gtnh_assistant/api.py` (FastAPI + uvicorn, bound to 127.0.0.1): status (Ollama, models, GPU residency,
+  knowledge-base stats, job state), streaming ask (status/token/final events from `Answerer`), search,
+  collect/update/index/rebuild/cancel jobs (reuse `Jobs`), collection errors, backup/restore. Serves
+  `frontend/dist` as static files. Reuse existing modules unchanged.
+- `frontend/`: Vite + React + TypeScript + `@base-ui/react` (v1.9 at time of writing), CSS modules modelled on
+  the Base UI demo styles (neutral oklch greys, 14 px type, 1 px borders, light/dark). Chat with streaming,
+  citation chips + collapsible evidence, settings (model Select, Sliders, Switch), status pills, Knowledge base
+  view (Progress, confirm Dialog, Toast on completion). Persist chat history in localStorage.
+- `start_gtnh.bat` launches the API/UI; keep Streamlit `app.py` as `start_gtnh.bat --classic` until the new UI
+  is verified. Node.js is needed only to build; built files run offline.
+- Tests: API tests with FastAPI TestClient; build and type-check the frontend before handing over.
+
 ## Next steps
 1. On the laptop: `git fetch && git checkout ollama-local-migration`, reinstall
    (`.\.venv\Scripts\python -m pip install -e ".[dev]"`), run `pytest -q`.
