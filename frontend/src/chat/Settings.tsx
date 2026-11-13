@@ -112,8 +112,8 @@ export function SettingsPanel({
           onChange={(v) => set('search_rounds', v)}
         />
       </div>
-      <div className={styles.Group}>
-        <Button disabled={!customised} onClick={() => setPrefs((p) => ({ ...p, options: {} }))}>
+      <div className={styles.Group} data-plain>
+        <Button size="sm" disabled={!customised} onClick={() => setPrefs((p) => ({ ...p, options: {} }))}>
           Reset to .env defaults
         </Button>
         <p className={ui.Hint}>Search, embeddings and answers all run on this computer. No paid API is used.</p>

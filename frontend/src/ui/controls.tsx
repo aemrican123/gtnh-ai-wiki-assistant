@@ -13,7 +13,7 @@ export { styles as ui };
 
 type ButtonProps = React.ComponentProps<'button'> & {
   variant?: 'default' | 'primary' | 'danger' | 'ghost';
-  size?: 'default' | 'icon';
+  size?: 'default' | 'sm' | 'icon' | 'icon-sm';
 };
 
 export function Button({ variant = 'default', size = 'default', className, ...props }: ButtonProps) {
@@ -156,7 +156,7 @@ export function NumberInput({
 }) {
   const id = React.useId();
   return (
-    <NumberField.Root id={id} value={value} min={min} step={step} onValueChange={(v) => onChange(v ?? min)}>
+    <NumberField.Root className={styles.NumberField} id={id} value={value} min={min} step={step} onValueChange={(v) => onChange(v ?? min)}>
       <label htmlFor={id} className={styles.Label}>
         {label}
       </label>
@@ -231,7 +231,7 @@ export function Toasts() {
                 <Toast.Title className={styles.ToastTitle} />
                 <Toast.Description className={styles.ToastDescription} />
               </div>
-              <Toast.Close className={styles.Button}>Dismiss</Toast.Close>
+              <Toast.Close render={<Button size="sm" variant="ghost" />}>Dismiss</Toast.Close>
             </Toast.Content>
           </Toast.Root>
         ))}

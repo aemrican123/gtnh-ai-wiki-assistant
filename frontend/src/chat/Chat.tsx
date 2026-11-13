@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ask, type Answer, type Options, type Status } from '../api';
 import type { Preferences } from '../App';
 import { Button, Confirm } from '../ui/controls';
-import { ArrowUpIcon, SlidersIcon, StopIcon, TrashIcon } from '../ui/icons';
+import { ArrowUpIcon, GearIcon, SlidersIcon, StopIcon, TrashIcon } from '../ui/icons';
 import { AnswerView, LiveAnswer } from './Message';
 import { SettingsPanel } from './Settings';
 import styles from './Chat.module.css';
@@ -133,6 +133,9 @@ export function Chat({
             )}
             {messages.length === 0 && !busy && (
               <div className={styles.Welcome}>
+                <span className={styles.WelcomeMark}>
+                  <GearIcon />
+                </span>
                 <h1 className={styles.WelcomeTitle}>Ask the wiki</h1>
                 <p className={styles.WelcomeText}>
                   Answers come only from your local copy of the GTNH wiki, with every fact cited. Nothing leaves
@@ -184,22 +187,23 @@ export function Chat({
               }}
             />
             {busy ? (
-              <Button variant="primary" size="icon" aria-label="Stop" onClick={() => abort.current?.abort()}>
+              <Button variant="primary" size="icon-sm" aria-label="Stop" onClick={() => abort.current?.abort()}>
                 <StopIcon />
               </Button>
             ) : (
-              <Button variant="primary" size="icon" type="submit" aria-label="Send" disabled={!draft.trim()}>
+              <Button variant="primary" size="icon-sm" type="submit" aria-label="Send" disabled={!draft.trim()}>
                 <ArrowUpIcon />
               </Button>
             )}
           </div>
           <div className={styles.ComposerBar}>
             <span className={styles.ComposerHint}>
-              {prefs.searchOnly ? 'Search only' : options.model} · Enter to send, Shift+Enter for a new line
+              {prefs.searchOnly ? 'Search only' : options.model} · <kbd>Enter</kbd> to send, <kbd>Shift</kbd>+<kbd>Enter</kbd> for a new line
             </span>
             <div className={styles.ComposerActions}>
               <Button
                 variant="ghost"
+                size="sm"
                 className={styles.SettingsToggle}
                 aria-expanded={showSettings}
                 onClick={() => setShowSettings((v) => !v)}
@@ -209,7 +213,7 @@ export function Chat({
               {messages.length > 0 && (
                 <Confirm
                   trigger={
-                    <Button variant="ghost" disabled={busy}>
+                    <Button variant="ghost" size="sm" disabled={busy}>
                       <TrashIcon /> Clear conversation
                     </Button>
                   }

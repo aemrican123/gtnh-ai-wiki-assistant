@@ -2,6 +2,15 @@
 
 Newest first. Each entry: decision, reason, consequences.
 
+## 2026-11-14 — Interface styled after shadcn/ui
+
+**Decision.** The interface uses shadcn/ui's look (neutral oklch tokens, `--radius` 0.625rem, soft shadows,
+segmented tabs, pill badges) in plain CSS modules over Base UI primitives, with Geist fonts bundled from npm.
+
+**Reason.** The owner asked for a modern, rounded look and pointed to shadcn/ui. shadcn itself needs Tailwind
+and Radix/Base UI component sources; copying its visual tokens keeps the existing Base UI components and CSS
+modules, adds no build tooling, and keeps everything offline.
+
 ## 2026-11-14 — React + Base UI interface served by a local FastAPI app
 
 **Decision.** The default interface is a Vite + React + TypeScript app using `@base-ui/react` (`frontend/`),
