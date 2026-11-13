@@ -39,3 +39,8 @@ Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the wa
 cd frontend; npm.cmd run typecheck; npm.cmd run build; cd ..   # interface (needs Node.js)
 install_shortcuts.bat / start_gtnh.bat / stop_gtnh.bat
 ```
+
+## Commits and pull requests
+- No AI attribution: no `Co-Authored-By` trailers, session links or "Generated with" footers in commit
+  messages or pull request descriptions. Commits are authored as the owner
+  (`aemrican123 <353811742+aemrican123@users.noreply.github.com>`).
