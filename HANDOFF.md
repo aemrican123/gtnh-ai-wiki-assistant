@@ -1,66 +1,59 @@
 # Handoff
 
-_Last updated: 2026-11-14, branch `ollama-local-migration`._
+_Last updated: 2026-11-14, branch `main`._
 
 ## State
-The OpenAI → Ollama migration is implemented in code; it has **not yet been run on the target Windows laptop**.
+The assistant runs fully locally on the target laptop (Windows 11, RTX 4070 Laptop 8 GB) and the owner
+uses it day to day. Everything below has been run there unless marked otherwise.
 
-Done:
-- `llm.py` Ollama client; `answer.py` rewritten for Ollama chat + `search_wiki` tool, streaming, local
-  metrics, context-window budgeting, follow-up and multi-article retrieval; OpenAI removed everywhere.
-- Streamlit sidebar: Ollama status, installed-model picker, GPU residency, generation/retrieval settings,
-  streaming answers with metrics.
-- `cli doctor`, `cli config-value`, `cli ask --model`.
-- `start_gtnh.bat`, `stop_gtnh.bat`, `scripts/benchmark_llm.py`.
-- Tests: `tests/test_llm.py` (fake Ollama server) and `tests/test_answer.py` pass (23 tests). They were run
-  in a Linux workspace without the full dependency set, using stand-ins for `tiktoken` and
-  `pydantic-settings`, so they must be re-run with the real environment.
+- **AI:** Ollama `qwen3.5:4b` at `num_ctx` 8192, 100% on the GPU; embeddings on the CPU. No OpenAI or
+  other paid API anywhere.
+- **Knowledge base:** the whole wiki is collected (collection queue 0) and indexed. `Update wiki` in the
+  Knowledge base view rechecks saved pages for changes.
+- **Interface:** React + Base UI in the shadcn/ui style (`frontend/`), served by `api.py` (FastAPI) on
+  127.0.0.1:8501. Streamlit was removed on 2026-11-14.
+- **Starting it:** the desktop / Start-menu shortcut (`install_shortcuts.bat`) opens an Edge app window with
+  no console; closing the window stops the app and unloads the model. `start_gtnh.bat` is the console
+  alternative; `stop_gtnh.bat` is the emergency stop.
+- **Quality:** latest benchmark and retrieval check below. Every grounded answer cites, every citation
+  resolves, and the unanswerable question is refused.
 
-Not yet verified (needs the laptop):
-- Full `pytest` suite with real dependencies (index, scraper, UI tests); `ruff` already passes.
-- Ollama installed and `cli doctor` run (results below). Still needed: `qwen3.5:4b` at 100% GPU.
-- `scripts/evaluate_retrieval.py` before/after the retrieval changes, on the real `data/` index.
-- `scripts/benchmark_llm.py`: load time, first-token latency, tokens/s, retrieval latency, RAM, VRAM,
-  citation validity, follow-up and unanswerable-question behaviour.
-- Offline test (Wi-Fi off), `start_gtnh.bat` / `stop_gtnh.bat` behaviour.
+## How the pieces fit
+- `api.py`: `GET /api/status` (Ollama, models, GPU residency, VRAM, knowledge-base counts, job state,
+  `.env` defaults; cached 10 s, `?refresh=true` bypasses), `POST /api/ask` (NDJSON stream: `status`,
+  `token`, `reset`, `final`, `error`), `GET /api/search`, `POST /api/jobs` and `/api/jobs/cancel`,
+  `GET /api/errors`, `POST /api/backup`, `POST /api/restore`, `POST /api/closing` (window-closed beacon).
+  Serves `frontend/dist` with an SPA fallback.
+- `frontend/`: Vite 8, React 19, TypeScript 5.9, `@base-ui/react` 1.9, CSS modules; tokens in
+  `src/global.css`; Geist fonts bundled from npm, no CDN. Chat history and settings live in localStorage.
+- `launcher.py` (run by the shortcut through `pythonw`): reuses a running app, starts `ollama serve` hidden,
+  hands setup problems to `start_gtnh.bat --prepare` in a console, opens an Edge/Chrome `--app` window,
+  logs to `data/launcher.log`.
+- `lifecycle.py`: after the `pagehide` beacon, 15 s without a request (or 300 s of silence) with no job or
+  answer running stops uvicorn and unloads the models used.
+- `start_gtnh.bat` rebuilds the interface when `frontend/src` or `package-lock.json` is newer than the
+  build, and reinstalls npm packages when the lock file changed (needs Node.js LTS).
 
-## React + Base UI interface (built 2026-11-14; owner confirmed it runs on the laptop)
-- `src/gtnh_assistant/api.py`: FastAPI + uvicorn on 127.0.0.1:8501. `GET /api/status` (Ollama, models, GPU
-  residency, nvidia-smi VRAM, knowledge-base counts, job state, `.env` defaults; Ollama/GPU cached 10 s,
-  `?refresh=true` bypasses), `POST /api/ask` (NDJSON stream: `status`, `token`, `reset`, `final`, `error`),
-  `GET /api/search`, `POST /api/jobs` / `/api/jobs/cancel`, `GET /api/errors`, `POST /api/backup`,
-  `POST /api/restore`. Serves `frontend/dist` with an SPA fallback. Existing modules unchanged.
-- `frontend/`: Vite 8 + React 19 + TypeScript 5.9 + `@base-ui/react` 1.9, CSS modules styled after shadcn/ui
-  (owner's choice, 2026-11-14: neutral oklch tokens, rounded corners, soft shadows, pill tabs, 3 px focus ring,
-  light/dark/system theme). Geist fonts are bundled from npm (`@fontsource-variable/*`), so nothing loads from a CDN.
-  Ask view: streaming answers, citation chips with tooltips, collapsible evidence, metrics, warnings, stop,
-  clear (confirm dialog); settings panel (model Select with GPU note, context Select, Sliders, search-only
-  Switch, reset to `.env`); chat and settings persisted in localStorage. Knowledge base view: stat tiles,
-  collection Progress, NumberField limit, collect/update/index, rebuild (confirm dialog), cancel, error table,
-  backup/restore, Toast when a job ends.
-- `start_gtnh.bat` builds the interface when `frontend/dist` is missing or older than `frontend/src` (needs
-  Node.js LTS), falls back to Streamlit without Node, and keeps `--classic` for Streamlit.
-- Verified in the cloud workspace: `pytest` 56 passed (incl. 11 new API tests and the Streamlit UI test) with
-  all dependencies except `sentence-transformers`/`torch` (download blocked there; tests use fake embeddings);
-  `ruff check` clean; `tsc` clean; `vite build` OK; headless-Chromium screenshots of both views in light and
-  dark with no console errors, against the real API with a fake Ollama and stub index.
-- Not verified: `start_gtnh.bat` on Windows, the UI against real Ollama + the real `data/` index, collection
-  jobs started from the new UI.
-
-## Desktop shortcut (built 2026-11-14, not yet run on the laptop)
-- `install_shortcuts.bat` → `gtnh_assistant.shortcuts`: desktop + Start-menu `GTNH Field Guide.lnk` (icon
-  `assets/gtnh.ico`) running `.venv\Scripts\pythonw.exe -m gtnh_assistant.launcher` in the project folder.
-- `launcher.py`: reuses a running app, starts `ollama serve` hidden if needed, otherwise hands over to
-  `start_gtnh.bat --prepare` in a console (Ollama missing, model missing, UI build), checks port 8501, then
-  `api.serve(exit_when_closed=True)` and opens an Edge/Chrome `--app` window. Logs to `data/launcher.log`.
-- `lifecycle.py`: the UI sends a `pagehide` beacon to `/api/closing`; with no request for 15 s afterwards (or
-  300 s of silence) and no job or answer stream running, uvicorn stops and the used models are unloaded.
-- Verified here: 63 tests pass (incl. 7 new); real uvicorn run exits 16 s after the beacon; in headless
-  Chromium a reload keeps it running and leaving the page stops it. Headless `page.close()` does not send the
-  beacon (test-tool quirk), so the 300 s fallback matters if a real browser ever skips it.
-- Not verified: the shortcut, pythonw launch, Edge app window and message boxes on Windows.
+## Known limits
+- The 4B model sometimes misreads tables: in the 2026-11-14 benchmark it described the EBF voltage-tier heat
+  bonus table as coil temperatures, and gave a doubtful aluminium heat figure. The cited passages are right;
+  check the evidence for exact numbers. A bigger model needs more VRAM than this laptop has (9B ran at 88%
+  GPU and 1.1 tokens/s).
+- Evidence is capped at about 4,500 tokens at `num_ctx` 8192; a warning says when that happens.
 
 ## Measurements
+
+### 2026-11-14 07:38 — qwen3.5:4b, num_ctx 8192, full wiki indexed (`scripts/benchmark_llm.py`)
+- **100% GPU**, 3.36 GB model; GPU memory 2,318 MB → 6,271 MB of 8,188 with the model loaded.
+- Cold model load 5.5 s; embedding model 0.07 s (cached); median first token **0.63 s**; median
+  **65.3 tokens/s**; median retrieval **55 ms**; answers 1.9–16.3 s end to end (16.3 s includes the cold load).
+- **11/11 answers behaved as expected**: all 10 grounded answers cited sources, all citations valid, the
+  follow-up resolved "it" to the EBF, and the "Quantum Banana Compressor" question was declined.
+  (The 2026-11-13 run had 2 answers without citations; the fix held.)
+- `scripts/evaluate_retrieval.py`: **12/12 PASS** on the full wiki.
+- Fixed after this run: grouped citations such as `[S6, S7]` were left unlinked (now split into
+  `[S6][S7]`); a declined answer no longer gets a "no citations" warning; the benchmark's gap check no longer
+  matches the in-game error text "not enough output space".
 
 ### 2026-11-13 23:33 — qwen3.5:4b, num_ctx 8192 (`cli doctor` + `scripts/benchmark_llm.py`)
 - **100% GPU**, 3.36 GB model; GPU memory 1,754 MB idle → 5,929 MB loaded (of 8,188).
