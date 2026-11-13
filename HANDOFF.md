@@ -32,6 +32,18 @@ Not yet verified (needs the laptop):
 4. If the 9B model is not 100% on GPU at `num_ctx=8192`, try `GTNH_NUM_CTX=6144` or `qwen3.5:4b`.
 
 ## Measurements
+
+### 2026-11-13 23:33 — qwen3.5:4b, num_ctx 8192 (`cli doctor` + `scripts/benchmark_llm.py`)
+- **100% GPU**, 3.36 GB model; GPU memory 1,754 MB idle → 5,929 MB loaded (of 8,188).
+- Cold model load 3.7 s; embedding model load 7.7 s (CPU, once per process).
+- Median first token **1.1 s** (first question after cold load 10.2 s); median **59.3 tokens/s**;
+  median retrieval **41 ms**; answers took 3–17 s end to end.
+- `scripts/evaluate_retrieval.py`: **12/12 PASS** after indexing all 372 collected articles (5,666 chunks).
+- All citations resolved to retrieved sources. Unanswerable "Quantum Banana Compressor" question: correctly
+  said the wiki has no such information. Follow-up question correctly resolved "it" to the EBF.
+- Problems found and fixed in code (not yet re-measured): 2/11 answers without citations; noisy
+  linked-article expansion. App process RAM not measured (`psutil` not installed).
+- 405 wiki URLs are still queued for collection; coverage is partial until collection finishes.
 ### 2026-11-13 — `cli doctor`, qwen3.5:9b, num_ctx 8192, Ollama 0.40.16
 - Loaded size 6.39 GB, 5.60 GB on GPU (**88% GPU**); GPU memory in use 7,413 / 8,188 MB, 3% utilisation.
 - Cold load 42.5 s; first token 71.0 s; **1.1 tokens/s**. Too slow → default switched to `qwen3.5:4b`.

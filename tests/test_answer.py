@@ -119,10 +119,25 @@ def test_question_naming_its_own_subject_is_not_rewritten():
     assert index.queries[0] == "How do I build a Cleanroom?"
 
 
-def test_multi_article_questions_pull_linked_articles():
+def test_linked_articles_are_off_by_default():
     index = StubIndex({"65": "EBF", "80": "1800 K"})
     Answerer(index, Settings(), FakeClient([reply()])).answer("What do I need before the EBF?")
+    assert index.queries[1:] == []
+
+
+def test_linked_articles_only_keep_the_linked_article():
+    index = StubIndex({"65": "EBF", "80": "1800 K"})
+    api = FakeClient([reply()])
+    result = Answerer(index, Settings(linked_articles=2), api).answer("What do I need before the EBF?")
     assert index.queries[1:] == ["1800 K"]
+    # The stub returns article 65 for every query, so the linked search adds nothing.
+    assert len(result.sources) == 1
+
+
+def test_citation_reminder_ends_the_prompt():
+    api = FakeClient([reply()])
+    Answerer(StubIndex(), Settings(), api).answer("Q")
+    assert api.calls[0]["messages"][1]["content"].endswith("right after every fact you take from it.")
 
 
 def test_no_evidence_does_not_call_model():
