@@ -49,8 +49,15 @@ class FakeClient:
         self.calls = []
 
     def chat(self, model, messages, tools=None, options=None, keep_alive=None, think=None, on_token=None):
-        self.calls.append({"model": model, "messages": [dict(m) for m in messages], "tools": tools,
-                           "options": options, "think": think})
+        self.calls.append(
+            {
+                "model": model,
+                "messages": [dict(m) for m in messages],
+                "tools": tools,
+                "options": options,
+                "think": think,
+            }
+        )
         result = self.replies.pop(0)
         if isinstance(result, Exception):
             raise result
@@ -106,8 +113,10 @@ def test_additional_search_round_uses_tool_messages():
 def test_follow_up_reuses_entities_from_earlier_question():
     index = StubIndex({"65": "Electric Blast Furnace"})
     api = FakeClient([reply()])
-    history = [{"role": "user", "content": "How does the Electric Blast Furnace work?"},
-               {"role": "assistant", "content": "It smelts. [S1]"}]
+    history = [
+        {"role": "user", "content": "How does the Electric Blast Furnace work?"},
+        {"role": "assistant", "content": "It smelts. [S1]"},
+    ]
     Answerer(index, Settings(), api).answer("And at higher tiers?", history)
     assert index.queries[0] == "And at higher tiers? Electric Blast Furnace"
 
@@ -163,7 +172,9 @@ def test_missing_citations_are_flagged():
 
 
 def test_reasoning_block_is_removed():
-    result = Answerer(StubIndex(), Settings(), FakeClient([reply("<think>hmm</think>1800 K. [S1]")])).answer("Q")
+    result = Answerer(StubIndex(), Settings(), FakeClient([reply("<think>hmm</think>1800 K. [S1]")])).answer(
+        "Q"
+    )
     assert "hmm" not in result.text and result.text.startswith("1800 K.")
 
 
@@ -189,7 +200,9 @@ def test_unexpected_failure_does_not_disclose_details():
 
 
 def test_tool_loop_stops_at_configured_limit():
-    api = FakeClient([reply("", tool_calls=search_call("another topic")), reply("", tool_calls=search_call())])
+    api = FakeClient(
+        [reply("", tool_calls=search_call("another topic")), reply("", tool_calls=search_call())]
+    )
     result = Answerer(StubIndex(), Settings(search_rounds=1), api).answer("Question")
     assert result.calls == 2
     assert api.calls[-1]["tools"] is None
@@ -218,5 +231,43 @@ def test_context_window_too_small_is_explained_without_calling_model():
 
 
 def test_truncated_output_is_reported():
-    result = Answerer(StubIndex(), Settings(), FakeClient([reply("Partial [S1]", done_reason="length")])).answer("Q")
+    result = Answerer(
+        StubIndex(), Settings(), FakeClient([reply("Partial [S1]", done_reason="length")])
+    ).answer("Q")
     assert any("output limit" in w for w in result.warnings)
+
+
+def sources(n):
+    return [
+        {
+            "id": f"S{i}",
+            "title": "Pollution",
+            "section": "Basics",
+            "url": f"https://wiki.gtnewhorizons.com/wiki/P{i}",
+        }
+        for i in range(1, n + 1)
+    ]
+
+
+def test_grouped_citations_are_split_and_linked():
+    from gtnh_assistant.answer import Answer as AnswerResult
+    from gtnh_assistant.answer import finalize_citations
+
+    result = AnswerResult(
+        text="Explosions pollute [S1, S2] and rockets too [S1; S2].", sources=sources(2), calls=1
+    )
+    finalize_citations(result)
+    assert result.text.count("](https://") == 4 and "[S1, S2]" not in result.text
+    assert not result.warnings
+
+
+def test_admitted_gap_needs_no_citation_warning():
+    from gtnh_assistant.answer import ADMITS_GAP, finalize_citations
+    from gtnh_assistant.answer import Answer as AnswerResult
+
+    result = AnswerResult(
+        text="The wiki evidence does not mention a Quantum Banana Compressor.", sources=sources(1), calls=1
+    )
+    finalize_citations(result)
+    assert result.warnings == []
+    assert not ADMITS_GAP.search('It shows the error "not enough output space" in the GUI.')

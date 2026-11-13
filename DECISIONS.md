@@ -2,6 +2,17 @@
 
 Newest first. Each entry: decision, reason, consequences.
 
+## 2026-11-14 — Streamlit removed
+
+**Decision.** The Streamlit interface (`app.py`, `tests/test_ui.py`, `start_gtnh.bat --classic`) and the
+`streamlit` dependency are gone. Without Node.js and without a built interface the launcher now stops with
+instructions instead of falling back.
+
+**Reason.** The owner confirmed the React interface and the desktop shortcut work on the laptop. One
+interface is less to maintain, and the install shrinks (Streamlit pulled in pandas, pyarrow, altair, pydeck).
+Leftover OpenAI-era packages (`distro`, `jiter`, `sniffio`) and the unused `python-multipart` were dropped
+from the lock file at the same time.
+
 ## 2026-11-14 — Desktop shortcut that behaves like an app
 
 **Decision.** A desktop/Start-menu shortcut runs a windowless Python launcher (`pythonw`) that serves the app

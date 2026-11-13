@@ -16,7 +16,7 @@ def writer_busy(directory):
 
 
 class Jobs:
-    """One local writer, durable crawl checkpoints, no Streamlit calls from workers."""
+    """One local writer, durable crawl checkpoints, no UI calls from workers."""
 
     def __init__(self, store, settings, index_factory):
         self.store, self.settings = store, settings

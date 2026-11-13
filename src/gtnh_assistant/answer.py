@@ -308,8 +308,23 @@ def clean(text):
     return re.sub(r"<think>.*?</think>", "", text or "", flags=re.S).strip()
 
 
+# The answer says the wiki does not cover the question (a correct answer needs no citation then).
+ADMITS_GAP = re.compile(
+    r"\b(not (enough|sufficient) (information|evidence|detail)|(does not|doesn't) (provide|contain|include|mention|say)"
+    r"|no (information|evidence|mention))",
+    re.I,
+)
+# Models sometimes group citations as [S6, S7] or [S6; S7]; split them into [S6][S7].
+GROUPED = re.compile(r"\[\s*(S\d+(?:\s*(?:,|;|&|and)\s*S\d+)+)\s*\]")
+
+
+def split_grouped_citations(text):
+    return GROUPED.sub(lambda m: "".join(f"[{c}]" for c in re.findall(r"S\d+", m[1])), text)
+
+
 def finalize_citations(result, check_missing=True):
     sources = {s["id"]: s for s in result.sources}
+    result.text = split_grouped_citations(result.text)
     unknown = set(re.findall(r"\[(S\d+)\]", result.text)) - sources.keys()
     if unknown:
         result.warnings.append("The model supplied an unknown citation; it has been removed.")
@@ -323,5 +338,5 @@ def finalize_citations(result, check_missing=True):
 
     cited = re.findall(r"\[(S\d+)\]", result.text)
     result.text = re.sub(r"\[(S\d+)\]", citation, result.text)
-    if check_missing and result.calls and not cited and not unknown:
+    if check_missing and result.calls and not cited and not unknown and not ADMITS_GAP.search(result.text):
         result.warnings.append("This answer contains no source citations; verify it against the retrieved passages.")

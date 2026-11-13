@@ -16,7 +16,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from gtnh_assistant.answer import Answerer
+from gtnh_assistant.answer import ADMITS_GAP, Answerer
 from gtnh_assistant.cli import gpu_memory
 from gtnh_assistant.config import Settings
 from gtnh_assistant.index import Index
@@ -79,10 +79,7 @@ def main():
         result = answerer.answer(question, history, on_token=lambda _: None)
         cited = sorted(set(re.findall(r"\[(S\d+)\]\(", result.text)))
         source_ids = {s["id"] for s in result.sources}
-        admits_gap = bool(
-            re.search(r"(not (enough|sufficient)|does not (provide|contain|include|say)|no (information|evidence))",
-                      result.text, re.I)
-        )
+        admits_gap = bool(ADMITS_GAP.search(result.text))
         rows.append(
             {
                 "question": question,

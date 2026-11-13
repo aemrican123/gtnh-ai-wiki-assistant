@@ -1,15 +1,12 @@
 @echo off
 rem GTNH Field Guide launcher: checks Ollama and the model, then starts the local web app.
-rem   start_gtnh.bat            the React interface (built automatically when Node.js is installed)
-rem   start_gtnh.bat --classic  the previous Streamlit interface
+rem   start_gtnh.bat            check, build the interface when needed (Node.js), and start the app
 rem   start_gtnh.bat --prepare  only check, download and build, then exit (used by the desktop shortcut)
 setlocal EnableExtensions
 cd /d "%~dp0"
 title GTNH Field Guide
 set "PORT=8501"
 set "PY=.venv\Scripts\python.exe"
-set "UI=react"
-if /i "%~1"=="--classic" set "UI=classic"
 if /i "%~1"=="--prepare" set "PREPARE=1"
 
 echo [1/5] Checking the Python environment...
@@ -74,7 +71,6 @@ if errorlevel 1 (
 :model_ready
 echo   %MODEL% is available.
 
-if "%UI%"=="classic" goto :start_app
 if not exist "frontend\dist\index.html" goto :build_ui
 rem Rebuild when the interface sources are newer than the built files (for example after git pull).
 powershell -NoProfile -Command "$built = (Get-Item 'frontend\dist\index.html').LastWriteTime; $src = Get-ChildItem 'frontend\src','frontend\index.html','frontend\package.json','frontend\package-lock.json' -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($src.LastWriteTime -gt $built) { exit 1 }"
@@ -87,12 +83,9 @@ if exist "frontend\dist\index.html" (
   echo   Node.js is not installed, so the interface cannot be rebuilt; using the existing build.
   goto :start_app
 )
-echo   The React interface is not built yet and Node.js is not installed.
-echo   Install Node.js LTS once from https://nodejs.org to use it.
-if defined PREPARE goto :fail
-echo   Starting the classic Streamlit interface for now...
-set "UI=classic"
-goto :start_app
+echo   [X] The interface is not built yet and Node.js is not installed.
+echo   Install Node.js LTS once from https://nodejs.org, then run this again.
+goto :fail
 
 :npm_build
 echo   Building the interface (only needed after an update)...
@@ -112,7 +105,7 @@ goto :start_app
 
 :npm_failed
 popd
-echo   [X] The interface build failed. See the messages above, or run: start_gtnh.bat --classic
+echo   [X] The interface build failed. See the messages above.
 goto :fail
 
 :start_app
@@ -131,12 +124,7 @@ if errorlevel 1 (
 )
 echo   Close this window or press Ctrl+C to stop the app. Run stop_gtnh.bat to also free GPU memory.
 start "" cmd /c "timeout /t 5 /nobreak >nul & start http://127.0.0.1:%PORT%"
-if "%UI%"=="classic" goto :run_classic
 "%PY%" -m gtnh_assistant.api --port %PORT%
-goto :eof
-
-:run_classic
-"%PY%" -m streamlit run app.py --server.address 127.0.0.1 --server.port %PORT% --server.headless true --browser.gatherUsageStats false
 goto :eof
 
 :fail
