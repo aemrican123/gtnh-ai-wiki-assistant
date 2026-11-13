@@ -75,7 +75,7 @@ echo   %MODEL% is available.
 if "%UI%"=="classic" goto :start_app
 if not exist "frontend\dist\index.html" goto :build_ui
 rem Rebuild when the interface sources are newer than the built files (for example after git pull).
-powershell -NoProfile -Command "$built = (Get-Item 'frontend\dist\index.html').LastWriteTime; $src = Get-ChildItem 'frontend\src','frontend\index.html','frontend\package.json' -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($src.LastWriteTime -gt $built) { exit 1 }"
+powershell -NoProfile -Command "$built = (Get-Item 'frontend\dist\index.html').LastWriteTime; $src = Get-ChildItem 'frontend\src','frontend\index.html','frontend\package.json','frontend\package-lock.json' -Recurse -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1; if ($src.LastWriteTime -gt $built) { exit 1 }"
 if not errorlevel 1 goto :start_app
 
 :build_ui
@@ -94,7 +94,11 @@ goto :start_app
 :npm_build
 echo   Building the interface (only needed after an update)...
 pushd frontend
-if exist "node_modules" goto :npm_run
+rem Reinstall packages when package-lock.json changed since the last install (npm writes the marker file).
+if not exist "node_modules\.package-lock.json" goto :npm_install
+powershell -NoProfile -Command "if ((Get-Item 'package-lock.json').LastWriteTime -gt (Get-Item 'node_modules\.package-lock.json').LastWriteTime) { exit 1 }"
+if not errorlevel 1 goto :npm_run
+:npm_install
 call npm ci --no-audit --no-fund
 if errorlevel 1 goto :npm_failed
 :npm_run
