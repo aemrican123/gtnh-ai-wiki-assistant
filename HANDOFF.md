@@ -60,16 +60,6 @@ Not yet verified (needs the laptop):
   beacon (test-tool quirk), so the 300 s fallback matters if a real browser ever skips it.
 - Not verified: the shortcut, pythonw launch, Edge app window and message boxes on Windows.
 
-## Next steps
-0. On the laptop after pulling: install Node.js LTS if missing, reinstall Python deps (adds `fastapi`,
-   `uvicorn`), run `start_gtnh.bat`, ask a few questions and run a small collection from Knowledge base.
-   If the new UI works, retire `app.py`/`--classic` and `tests/test_ui.py` in a separate change.
-1. On the laptop: `git fetch && git checkout ollama-local-migration`, reinstall
-   (`.\.venv\Scripts\python -m pip install -e ".[dev]"`), run `pytest -q`.
-2. Install Ollama, run `start_gtnh.bat` (it offers to pull the model), then `cli doctor`.
-3. Run `scripts/evaluate_retrieval.py` and `scripts/benchmark_llm.py`; record results below.
-4. If the 9B model is not 100% on GPU at `num_ctx=8192`, try `GTNH_NUM_CTX=6144` or `qwen3.5:4b`.
-
 ## Measurements
 
 ### 2026-11-13 23:33 — qwen3.5:4b, num_ctx 8192 (`cli doctor` + `scripts/benchmark_llm.py`)
