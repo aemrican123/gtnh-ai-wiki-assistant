@@ -1,7 +1,7 @@
 # AGENTS.md — shared instructions for coding agents (Claude Code, Codex, others)
 
 ## Project
-GTNH Field Guide: a fully local GT New Horizons wiki assistant. Python 3.11–3.13, React + Base UI interface (`frontend/`, served by `api.py`; classic Streamlit `app.py`),
+GTNH Field Guide: a fully local GT New Horizons wiki assistant. Python 3.11–3.13, React + Base UI interface (`frontend/`, served by `api.py`),
 package in `src/gtnh_assistant/`. Target machine: Windows 11, RTX 4070 Laptop (8 GB VRAM), 32 GB RAM.
 Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the way they are.
 
@@ -37,5 +37,5 @@ Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the wa
 .\.venv\Scripts\python scripts\evaluate_retrieval.py   # retrieval regression check (needs indexed data)
 .\.venv\Scripts\python scripts\benchmark_llm.py        # end-to-end latency/quality run (needs Ollama)
 cd frontend; npm.cmd run typecheck; npm.cmd run build; cd ..   # interface (needs Node.js)
-start_gtnh.bat / start_gtnh.bat --classic / stop_gtnh.bat
+install_shortcuts.bat / start_gtnh.bat / stop_gtnh.bat
 ```
