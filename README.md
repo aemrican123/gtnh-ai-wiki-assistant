@@ -39,13 +39,15 @@ To stop: close the launcher window (or press Ctrl+C in it), or double-click **`s
 Manual start, equivalent to the script:
 
 ```powershell
-cd frontend; npm ci; npm run build; cd ..          # once, and after updating the interface
+cd frontend; npm.cmd ci; npm.cmd run build; cd ..   # once, and after updating the interface
 .\.venv\Scripts\python -m gtnh_assistant.api --port 8501
 # Classic interface:
 .\.venv\Scripts\python -m streamlit run app.py --server.address 127.0.0.1 --server.headless true --browser.gatherUsageStats false
 ```
 
-For interface development, run the API as above and `npm run dev` in `frontend/` (Vite proxies `/api` to port 8501).
+In PowerShell, use `npm.cmd` rather than `npm`: Windows' default execution policy blocks the `npm.ps1` script. Run the launcher as `.\start_gtnh.bat` (PowerShell needs the `.\` prefix) or double-click it.
+
+For interface development, run the API as above and `npm.cmd run dev` in `frontend/` (Vite proxies `/api` to port 8501).
 
 ### 5. Check everything
 
@@ -169,7 +171,7 @@ Restoration requires an empty destination and never overwrites an existing datab
 .\.venv\Scripts\python -m pytest -q
 .\.venv\Scripts\python -m ruff check .
 .\.venv\Scripts\python -m pip check
-cd frontend; npm run typecheck; npm run build
+cd frontend; npm.cmd run typecheck; npm.cmd run build; cd ..
 ```
 
 Tests exercise real SQLite and Chroma persistence with deterministic test embeddings, mocked HTTP, a fake local Ollama server, extraction, robots wildcard rules and CDN redirects, interrupted indexing, stale-revision filtering, deletion, backup/restore, citations, tool-search rounds, follow-up retrieval, context-window budgeting, Ollama error handling, the local API (status, streaming answers, jobs, restore safety) and Streamlit controls. No model needs to be installed to run them. The first tokenizer load requires its public download; after caching it, the suite runs offline.

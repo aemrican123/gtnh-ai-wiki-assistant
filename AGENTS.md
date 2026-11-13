@@ -34,6 +34,6 @@ Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the wa
 .\.venv\Scripts\python -m gtnh_assistant.cli doctor
 .\.venv\Scripts\python scripts\evaluate_retrieval.py   # retrieval regression check (needs indexed data)
 .\.venv\Scripts\python scripts\benchmark_llm.py        # end-to-end latency/quality run (needs Ollama)
-cd frontend; npm run typecheck; npm run build          # interface (needs Node.js)
+cd frontend; npm.cmd run typecheck; npm.cmd run build; cd ..   # interface (needs Node.js)
 start_gtnh.bat / start_gtnh.bat --classic / stop_gtnh.bat
 ```
