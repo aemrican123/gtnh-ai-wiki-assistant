@@ -1,0 +1,140 @@
+# Decisions
+
+Newest first. Each entry: decision, reason, consequences.
+
+## 2026-11-14 — Desktop shortcut that behaves like an app
+
+**Decision.** A desktop/Start-menu shortcut runs a windowless Python launcher (`pythonw`) that serves the app
+and opens it as an Edge app window. Closing the window stops the server and unloads the model: the page sends
+a beacon on `pagehide`; 15 s without another request (or 300 s of total silence) ends the process, unless a
+job or answer is running. Setup problems are handed to `start_gtnh.bat --prepare` in a visible console.
+
+**Reason.** The owner wants to open and close it like a normal program. pythonw avoids a console without
+VBScript (being phased out of Windows) or a packaged executable. The grace period survives reloads and the
+fallback covers a lost beacon; browsers throttle hidden windows to about one poll per minute, so the fallback
+must stay well above that. Shortcuts are created with PowerShell `-EncodedCommand`, which the script
+execution policy does not block and which needs no quoting.
+
+**Consequences.** `start_gtnh.bat` still works as before (console, no auto-exit). Ollama started by the
+launcher keeps running after the app closes, like the Ollama tray app.
+
+## 2026-11-14 — Interface styled after shadcn/ui
+
+**Decision.** The interface uses shadcn/ui's look (neutral oklch tokens, `--radius` 0.625rem, soft shadows,
+segmented tabs, pill badges) in plain CSS modules over Base UI primitives, with Geist fonts bundled from npm.
+
+**Reason.** The owner asked for a modern, rounded look and pointed to shadcn/ui. shadcn itself needs Tailwind
+and Radix/Base UI component sources; copying its visual tokens keeps the existing Base UI components and CSS
+modules, adds no build tooling, and keeps everything offline.
+
+## 2026-11-14 — React + Base UI interface served by a local FastAPI app
+
+**Decision.** The default interface is a Vite + React + TypeScript app using `@base-ui/react` (`frontend/`),
+served together with a small FastAPI API (`api.py`) on 127.0.0.1:8501. Streamlit `app.py` stays available as
+`start_gtnh.bat --classic` until the new interface is verified on the laptop. Built files (`frontend/dist`) are
+not committed; the launcher builds them with Node.js when missing or out of date.
+
+**Reason.** The owner chose a rebuilt React + Base UI interface over restyling Streamlit. FastAPI + uvicorn
+are free, local and small, and `TestClient` makes the API testable without Ollama. Answers stream as NDJSON
+from the existing `Answerer` callbacks, so no answering or retrieval code changed. Loopback binding only,
+because there is no authentication. Chat history lives in the browser (localStorage), as Streamlit history
+was per session before.
+
+**Consequences.** New Python dependencies `fastapi` and `uvicorn`; Node.js LTS is needed to build the
+interface (not to run it). Stopping an answer in the UI closes the stream; the model call finishes in the
+background and its usage row is still recorded.
+
+## 2026-11-13 — A robots-disallowed URL is skipped, not fatal
+
+**Decision.** `Disallowed` (a subclass of `AccessDenied`) marks a single URL that robots.txt or the redirect
+policy rules out; the crawl records it as `skipped` and continues. HTTP 401/403, unreadable robots.txt and
+sitemap problems still stop collection.
+
+**Reason.** Collection stopped on `robots.txt disallows .../Special:MyLanguage/GT_Tools#Screwdriver`: an
+ordinary article redirects to a `Special:` page the wiki forbids crawlers to fetch. Refusing that one fetch
+is correct; stopping the whole crawl was not. Skipped URLs are re-checked (without a request) on updates.
+
+## 2026-11-13 — Linked-article expansion off by default; citation reminder added
+
+**Decision.** `GTNH_LINKED_ARTICLES` defaults to 0 (the expansion from the earlier retrieval decision is now
+opt-in, and when on it keeps only chunks of the linked article). A short citation instruction now ends the
+user prompt.
+
+**Reason.** First `qwen3.5:4b` benchmark (11 questions): expansion added unrelated articles (Portable Scanner,
+AR Glasses, Charging for an EBF power question; Hot Isostatic Pressurization Unit and Plasma Forge for a
+coil question), pushed one prompt against the context limit, and its passages were cited only once, wrongly.
+Two of 11 answers (EBF construction, Cleanroom) had correct-looking content but no [S#] citations.
+
+**Open.** Re-run `scripts/benchmark_llm.py` and confirm every answer cites sources.
+
+## 2026-11-13 — Default model changed to `qwen3.5:4b` after measurement
+
+**Decision.** `GTNH_LLM_MODEL` now defaults to `qwen3.5:4b`. `qwen3.5:9b` stays usable by setting it in `.env`.
+
+**Reason.** `cli doctor` on the RTX 4070 Laptop (8 GB), Ollama 0.40.16, `num_ctx=8192`: `qwen3.5:9b` loaded as
+6.39 GB with only 5.60 GB (88%) in GPU memory; total GPU memory in use 7,413 / 8,188 MB. Generation ran at
+1.1 tokens/s, first token 71 s (42.5 s of it model load). The CPU-resident share makes it far too slow for chat.
+
+**Open.** Confirm `qwen3.5:4b` is 100% on GPU and measure it with `scripts/benchmark_llm.py`.
+
+## 2026-11-13 — Migrate answer generation from OpenAI to local Ollama
+
+**Decision.** Answers are generated only by a local model served by Ollama. The OpenAI client, API-key
+handling, price settings and cost estimates were removed (the owner chose removal over keeping an opt-in
+provider). There is no remote fallback.
+
+**Reason.** API credit was exhausted; the goal is a self-hosted assistant with no recurring cost that works
+offline after setup.
+
+**Consequences.** `openai` is no longer a dependency. Old `OPENAI_*`/`GTNH_*_PRICE` keys in an existing
+`.env` are ignored (settings use `extra="ignore"`). The `usage` table now records local metrics instead of
+cost.
+
+## 2026-11-13 — Default model `qwen3.5:9b`, fallback `qwen3.5:4b`
+
+**Decision.** Default `GTNH_LLM_MODEL=qwen3.5:9b` (about 6.6 GB at Ollama's default 4-bit quantization),
+with `num_ctx=8192`. If it does not stay 100% on the 8 GB GPU or is too slow, switch to `qwen3.5:4b`
+(about 3.4 GB). Only one model is downloaded until measurements justify another.
+
+**Reason.** At the time of the migration the Qwen3.5 small models were the strongest open models under
+10B parameters in independent benchmarks, support tool calling, and have thinking disabled by default for the
+small sizes. Qwen 2.5 7B (suggested in the original brief) is a generation older with a 32K context limit.
+
+**Open.** Not yet measured on the target laptop. Fill in `HANDOFF.md` with `cli doctor` and
+`scripts/benchmark_llm.py` results; revisit if the model spills to CPU.
+
+## 2026-11-13 — Keep local MiniLM embeddings on the CPU
+
+**Decision.** No embedding migration. `sentence-transformers/all-MiniLM-L6-v2` already runs locally and is
+cached per model + content hash; Chroma collections are keyed by embedding model.
+
+**Reason.** Embeddings were never paid; keeping them avoids reindexing and keeps all GPU memory for the
+language model. A stronger embedder can be evaluated later as a separate collection, gated by
+`scripts/evaluate_retrieval.py`, without deleting existing data.
+
+## 2026-11-13 — Stdlib HTTP client for Ollama
+
+**Decision.** `llm.py` uses `urllib` instead of the `ollama` package or `httpx`.
+
+**Reason.** No new dependency, easy to test with a fake local server, and the API surface needed is small
+(`/api/chat`, `/api/tags`, `/api/ps`, `/api/version`, `/api/generate` for unloading).
+
+## 2026-11-13 — Context budgeting against the model's window
+
+**Decision.** The evidence budget is reduced so that system prompt + tool schema + history + question +
+evidence + output fit in `num_ctx` × 0.85. The app warns when evidence is reduced and refuses (without a
+model call) when even 300 evidence tokens would not fit.
+
+**Reason.** Ollama silently truncates prompts that exceed `num_ctx`, which would drop evidence or
+instructions. `cl100k_base` is only an approximation of Qwen's tokenizer, hence the margin.
+
+## 2026-11-13 — Retrieval changes kept deliberately small
+
+**Decision.** Kept hybrid BM25 + vector retrieval as is. Added (1) follow-up retrieval that reuses the
+previous question's named subjects when the new question names none, and (2) for progression / requirement /
+recipe / comparison questions, up to two linked articles mentioned by the first passages, each capped at a
+sixth of the budget. Neighbouring-chunk expansion for split tables was deferred.
+
+**Reason.** The existing retrieval already covers hybrid search, dedup, entity matching and multi-subject
+reservation. Deterministic rewrites avoid an extra model call per question. Both additions must be checked
+with `scripts/evaluate_retrieval.py` and the benchmark on real data; remove them if they do not help.

@@ -213,6 +213,7 @@ class Store:
                     "indexed_articles": "SELECT count(*) FROM articles WHERE deleted=0 AND indexed_digest=digest",
                     "pending": "SELECT count(*) FROM frontier WHERE state='pending'",
                     "errors": "SELECT count(*) FROM frontier WHERE state='error'",
+                    "skipped": "SELECT count(*) FROM frontier WHERE state='skipped'",
                     "done": "SELECT count(*) FROM frontier WHERE state='done'",
                 }.items()
             }
