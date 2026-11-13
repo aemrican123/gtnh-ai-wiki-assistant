@@ -48,6 +48,10 @@ def ollama_status(host):
 
 
 settings, store, get_index, jobs = resources()
+if not isinstance(settings, Settings):
+    # The code was updated while the app was running: the cached objects come from the old modules.
+    resources.clear()
+    settings, store, get_index, jobs = resources()
 st.title("GTNH Field Guide")
 st.caption("Your local wiki companion · Answers with evidence, from steam to the Stargate")
 
