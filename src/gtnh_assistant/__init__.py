@@ -1,0 +1,1 @@
+"""GTNH wiki assistant."""
