@@ -18,12 +18,12 @@ python -m venv .venv
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-If `.env` already exists, **keep it**. Old `OPENAI_*` and price entries are ignored and can be deleted. To set the local model, add or edit `GTNH_LLM_MODEL=qwen3.5:9b` (see `.env.example` for every setting).
+If `.env` already exists, **keep it**. Old `OPENAI_*` and price entries are ignored and can be deleted. To set the local model, add or edit `GTNH_LLM_MODEL=qwen3.5:4b` (see `.env.example` for every setting).
 
-### 3. Download the model (once, about 6.6 GB)
+### 3. Download the model (once, about 3.4 GB)
 
 ```powershell
-ollama pull qwen3.5:9b
+ollama pull qwen3.5:4b
 ```
 
 `start_gtnh.bat` offers to do this for you if the model is missing.
@@ -46,7 +46,7 @@ Manual start, equivalent to the script:
 .\.venv\Scripts\python -m gtnh_assistant.cli doctor
 ```
 
-`doctor` reports whether Ollama is installed and running, the installed models, a test answer with load time, first-token time and tokens/second, how much of the model sits in GPU memory, NVIDIA memory use, and knowledge-base counts. In `ollama ps` (or the app sidebar) the model should show **100% GPU**; if part of it is on the CPU, lower `GTNH_NUM_CTX` or choose a smaller model such as `qwen3.5:4b`.
+`doctor` reports whether Ollama is installed and running, the installed models, a test answer with load time, first-token time and tokens/second, how much of the model sits in GPU memory, NVIDIA memory use, and knowledge-base counts. In `ollama ps` (or the app sidebar) the model should show **100% GPU**; if part of it is on the CPU, generation becomes very slow: lower `GTNH_NUM_CTX` or choose a smaller model. On the RTX 4070 Laptop (8 GB), `qwen3.5:9b` measured only 88% on GPU at 8K context and 1.1 tokens/s, so `qwen3.5:4b` is the default.
 
 ### Using the app
 
@@ -125,7 +125,7 @@ Each answer's local metrics (model, load time, first-token time, tokens/second, 
 
 | Environment variable | Default | Purpose |
 |---|---|---|
-| `GTNH_LLM_MODEL` | `qwen3.5:9b` | Ollama model used for answers |
+| `GTNH_LLM_MODEL` | `qwen3.5:4b` | Ollama model used for answers |
 | `GTNH_OLLAMA_HOST` (or `OLLAMA_HOST`) | `http://127.0.0.1:11434` | Local Ollama server |
 | `GTNH_NUM_CTX` | `8192` | Model context window; larger uses more GPU memory |
 | `GTNH_TEMPERATURE` | `0.2` | Lower is more literal |
@@ -141,7 +141,7 @@ Each answer's local metrics (model, load time, first-token time, tokens/second, 
 | `GTNH_RETRIEVAL_LIMIT` | `8` | Maximum retrieved chunks per search |
 | `GTNH_SEARCH_ROUNDS` | `2` | Additional tool-search rounds |
 
-To try another model: `ollama pull <name>`, then pick it in the sidebar or set `GTNH_LLM_MODEL`. On an 8 GB GPU, models of about 9B parameters or fewer at the default 4-bit quantization fit; check `ollama ps` shows 100% GPU.
+To try another model: `ollama pull <name>`, then pick it in the sidebar or set `GTNH_LLM_MODEL`. On an 8 GB laptop GPU, Windows and other programs already use part of the memory, so 9B models may not fit entirely; check `ollama ps` shows 100% GPU.
 
 The public tokenizer is cached under `data/tokenizers` relative to the launch directory; set `TIKTOKEN_CACHE_DIR` to override this. The first tokenizer/model download requires internet. Retrieval and answering subsequently work without an internet connection. Bind Streamlit to localhost: the app has no authentication and is intended for personal use.
 

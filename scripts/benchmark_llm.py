@@ -1,7 +1,7 @@
 """End-to-end benchmark of the local assistant with real GTNH questions.
 
 Run after indexing, with Ollama running:
-    .venv\\Scripts\\python scripts\\benchmark_llm.py [--model qwen3.5:9b] [--num-ctx 8192]
+    .venv\\Scripts\\python scripts\\benchmark_llm.py [--model qwen3.5:4b] [--num-ctx 8192]
 
 It measures cold model load, first-token latency, generation speed, retrieval latency, process RAM and
 GPU memory, and checks that citations resolve to retrieved wiki sources. Results are written to

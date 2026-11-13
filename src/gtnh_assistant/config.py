@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ollama_host: str = Field(
         default="http://127.0.0.1:11434", validation_alias=AliasChoices("GTNH_OLLAMA_HOST", "OLLAMA_HOST")
     )
-    llm_model: str = "qwen3.5:9b"
+    llm_model: str = "qwen3.5:4b"
     num_ctx: int = Field(default=8192, ge=2048, le=131072)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     keep_alive: str = "30m"
