@@ -1,7 +1,7 @@
 # AGENTS.md — shared instructions for coding agents (Claude Code, Codex, others)
 
 ## Project
-GTNH Field Guide: a fully local GT New Horizons wiki assistant. Python 3.11–3.13, Streamlit UI (`app.py`),
+GTNH Field Guide: a fully local GT New Horizons wiki assistant. Python 3.11–3.13, React + Base UI interface (`frontend/`, served by `api.py`; classic Streamlit `app.py`),
 package in `src/gtnh_assistant/`. Target machine: Windows 11, RTX 4070 Laptop (8 GB VRAM), 32 GB RAM.
 Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the way they are.
 
@@ -12,6 +12,8 @@ Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the wa
   (BM25 + vectors via reciprocal rank fusion, entity boosts, dedup).
 - `llm.py` — stdlib-only Ollama HTTP client (chat with streaming + tools, tags, ps, errors).
 - `answer.py` — retrieval → context budgeting → Ollama chat with a `search_wiki` tool → citation validation.
+- `api.py` — FastAPI on 127.0.0.1: status, NDJSON streaming answers, search, jobs, backup/restore; serves
+  `frontend/dist`. `frontend/` — Vite + React + TypeScript + `@base-ui/react`, CSS modules, no CDN assets.
 - `jobs.py`, `cli.py`, `backup.py` — background ingest, command line (`doctor`, `ask`, …), backup/restore.
 
 ## Rules
@@ -31,5 +33,6 @@ Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the wa
 .\.venv\Scripts\python -m gtnh_assistant.cli doctor
 .\.venv\Scripts\python scripts\evaluate_retrieval.py   # retrieval regression check (needs indexed data)
 .\.venv\Scripts\python scripts\benchmark_llm.py        # end-to-end latency/quality run (needs Ollama)
-start_gtnh.bat / stop_gtnh.bat
+cd frontend; npm run typecheck; npm run build          # interface (needs Node.js)
+start_gtnh.bat / start_gtnh.bat --classic / stop_gtnh.bat
 ```

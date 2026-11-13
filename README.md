@@ -20,6 +20,8 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 
 If `.env` already exists, **keep it**. Old `OPENAI_*` and price entries are ignored and can be deleted. To set the local model, add or edit `GTNH_LLM_MODEL=qwen3.5:4b` (see `.env.example` for every setting).
 
+The interface is built with Node.js. Install **Node.js LTS** once from <https://nodejs.org> (only needed to build; the built interface runs offline). `start_gtnh.bat` builds it automatically the first time and after an update. Without Node.js the launcher falls back to the classic Streamlit interface.
+
 ### 3. Download the model (once, about 3.4 GB)
 
 ```powershell
@@ -30,15 +32,20 @@ ollama pull qwen3.5:4b
 
 ### 4. Start and stop
 
-Double-click **`start_gtnh.bat`**. It checks that Ollama is installed, starts the Ollama service if it is not already running (it never starts a second copy), checks the model is downloaded, then opens **http://127.0.0.1:8501**.
+Double-click **`start_gtnh.bat`**. It checks that Ollama is installed, starts the Ollama service if it is not already running (it never starts a second copy), checks the model is downloaded, builds the interface if it is missing or out of date, then opens **http://127.0.0.1:8501**. `start_gtnh.bat --classic` starts the previous Streamlit interface instead (kept until the new one is verified).
 
 To stop: close the launcher window (or press Ctrl+C in it), or double-click **`stop_gtnh.bat`**, which also unloads the model from GPU memory. `stop_gtnh.bat --all` also stops the Ollama service.
 
 Manual start, equivalent to the script:
 
 ```powershell
+cd frontend; npm ci; npm run build; cd ..          # once, and after updating the interface
+.\.venv\Scripts\python -m gtnh_assistant.api --port 8501
+# Classic interface:
 .\.venv\Scripts\python -m streamlit run app.py --server.address 127.0.0.1 --server.headless true --browser.gatherUsageStats false
 ```
+
+For interface development, run the API as above and `npm run dev` in `frontend/` (Vite proxies `/api` to port 8501).
 
 ### 5. Check everything
 
@@ -52,7 +59,7 @@ Manual start, equivalent to the script:
 
 In **Knowledge base**, start with 20 articles; use 0 for all remaining articles. Collection and indexing run in a background thread. The page reports counts, errors, and the current operation. You can cancel and resume. The first indexing run downloads the local embedding model; it uses the CPU, leaving GPU memory for the language model. Later runs use the cached model.
 
-The sidebar shows Ollama status, the installed models (pick one to switch), what is loaded in GPU memory, and generation settings: context length, temperature, answer length, evidence budget, passages per search, and extra searches. Settings come from `.env`; sidebar changes last for the current session. Answers stream as they are written and show the model, tokens/second, first-token time, retrieval time, and token counts. Chat history is session-local and can be cleared. The knowledge base persists independently of chat history.
+The header shows Ollama status, how much of the loaded model is on the GPU, VRAM use and the number of indexed passages. The settings panel lists the installed models (pick one to switch) and generation settings: context length, temperature, answer length, evidence budget, passages per search, and extra searches. Defaults come from `.env`; changes in the panel are remembered in this browser, and **Reset to .env defaults** discards them. Answers stream as they are written; citation chips such as `S1` show the article on hover and open the wiki page, and **Retrieved evidence** lists every passage. Each answer shows the model, tokens/second, first-token time, retrieval time, and token counts. Chat history is kept in this browser (localStorage) and can be cleared. The knowledge base persists independently of chat history.
 
 Select **Search the wiki only (no model)** to inspect evidence without running the model.
 
@@ -144,7 +151,7 @@ Each answer's local metrics (model, load time, first-token time, tokens/second, 
 
 To try another model: `ollama pull <name>`, then pick it in the sidebar or set `GTNH_LLM_MODEL`. On an 8 GB laptop GPU, Windows and other programs already use part of the memory, so 9B models may not fit entirely; check `ollama ps` shows 100% GPU.
 
-The public tokenizer is cached under `data/tokenizers` relative to the launch directory; set `TIKTOKEN_CACHE_DIR` to override this. The first tokenizer/model download requires internet. Retrieval and answering subsequently work without an internet connection. Bind Streamlit to localhost: the app has no authentication and is intended for personal use.
+The public tokenizer is cached under `data/tokenizers` relative to the launch directory; set `TIKTOKEN_CACHE_DIR` to override this. The first tokenizer/model download requires internet. Retrieval and answering subsequently work without an internet connection. The API (and Streamlit) bind to 127.0.0.1 only: the app has no authentication and is intended for personal use.
 
 ## Backup and restoration
 
@@ -162,14 +169,15 @@ Restoration requires an empty destination and never overwrites an existing datab
 .\.venv\Scripts\python -m pytest -q
 .\.venv\Scripts\python -m ruff check .
 .\.venv\Scripts\python -m pip check
+cd frontend; npm run typecheck; npm run build
 ```
 
-Tests exercise real SQLite and Chroma persistence with deterministic test embeddings, mocked HTTP, a fake local Ollama server, extraction, robots wildcard rules and CDN redirects, interrupted indexing, stale-revision filtering, deletion, backup/restore, citations, tool-search rounds, follow-up retrieval, context-window budgeting, Ollama error handling, and Streamlit controls. No model needs to be installed to run them. The first tokenizer load requires its public download; after caching it, the suite runs offline.
+Tests exercise real SQLite and Chroma persistence with deterministic test embeddings, mocked HTTP, a fake local Ollama server, extraction, robots wildcard rules and CDN redirects, interrupted indexing, stale-revision filtering, deletion, backup/restore, citations, tool-search rounds, follow-up retrieval, context-window budgeting, Ollama error handling, the local API (status, streaming answers, jobs, restore safety) and Streamlit controls. No model needs to be installed to run them. The first tokenizer load requires its public download; after caching it, the suite runs offline.
 
 Live verification is separate: with Ollama running and articles indexed, run `python scripts/evaluate_retrieval.py` (retrieval only) and `python scripts/benchmark_llm.py` (end to end). The benchmark asks real GTNH questions, including a follow-up, a multi-article progression question, a comparison, and an intentionally unanswerable recipe question, and writes every answer plus load time, first-token latency, tokens/second, retrieval latency, RAM, and GPU memory to `data/benchmark-*.json`. Read the answers against their cited passages; the script checks that citations resolve, not that answers are correct.
 
 ## Project layout
 
-`src/gtnh_assistant/` contains collection/extraction, SQLite storage, indexing/retrieval, the Ollama client (`llm.py`), answering, job coordination, backup, and CLI modules. `start_gtnh.bat` / `stop_gtnh.bat` launch and stop the app on Windows. `app.py` is the Streamlit interface; `tests/` contains automated checks. `data/`, `.env`, and `.venv/` are gitignored.
+`src/gtnh_assistant/` contains collection/extraction, SQLite storage, indexing/retrieval, the Ollama client (`llm.py`), answering, job coordination, backup, and CLI modules. `start_gtnh.bat` / `stop_gtnh.bat` launch and stop the app on Windows. `api.py` serves the React interface in `frontend/` (Vite + React + Base UI) and its JSON/streaming endpoints; `app.py` is the classic Streamlit interface; `tests/` contains automated checks. `data/`, `.env`, and `.venv/` are gitignored.
 
 Wiki material remains attributed to the [GT New Horizons Wiki](https://wiki.gtnewhorizons.com/wiki/Main_Page), under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) unless otherwise noted. Individual media may have different terms. This is an independent assistant, not an official GTNH or Minecraft product.

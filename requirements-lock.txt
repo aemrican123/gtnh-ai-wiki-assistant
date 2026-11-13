@@ -18,6 +18,7 @@ cloudpickle==3.1.2
 colorama==0.4.6
 distro==1.9.0
 durationpy==0.11
+fastapi==0.162.6
 filelock==3.32.7
 flatbuffers==25.12.19
 frozenlist==1.8.0

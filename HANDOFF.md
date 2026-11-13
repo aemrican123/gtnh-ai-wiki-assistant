@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-11-13, branch `ollama-local-migration`._
+_Last updated: 2026-11-14, branch `ollama-local-migration`._
 
 ## State
 The OpenAI → Ollama migration is implemented in code; it has **not yet been run on the target Windows laptop**.
@@ -24,22 +24,32 @@ Not yet verified (needs the laptop):
   citation validity, follow-up and unanswerable-question behaviour.
 - Offline test (Wi-Fi off), `start_gtnh.bat` / `stop_gtnh.bat` behaviour.
 
-## Next: React + Base UI interface (approved by the owner, 2026-11-14)
-Not started. The previous session could not install npm/pip packages, so the owner is enabling package installs
-and continuing in a new chat. Plan:
-- `src/gtnh_assistant/api.py` (FastAPI + uvicorn, bound to 127.0.0.1): status (Ollama, models, GPU residency,
-  knowledge-base stats, job state), streaming ask (status/token/final events from `Answerer`), search,
-  collect/update/index/rebuild/cancel jobs (reuse `Jobs`), collection errors, backup/restore. Serves
-  `frontend/dist` as static files. Reuse existing modules unchanged.
-- `frontend/`: Vite + React + TypeScript + `@base-ui/react` (v1.9 at time of writing), CSS modules modelled on
-  the Base UI demo styles (neutral oklch greys, 14 px type, 1 px borders, light/dark). Chat with streaming,
-  citation chips + collapsible evidence, settings (model Select, Sliders, Switch), status pills, Knowledge base
-  view (Progress, confirm Dialog, Toast on completion). Persist chat history in localStorage.
-- `start_gtnh.bat` launches the API/UI; keep Streamlit `app.py` as `start_gtnh.bat --classic` until the new UI
-  is verified. Node.js is needed only to build; built files run offline.
-- Tests: API tests with FastAPI TestClient; build and type-check the frontend before handing over.
+## React + Base UI interface (built 2026-11-14, not yet run on the laptop)
+- `src/gtnh_assistant/api.py`: FastAPI + uvicorn on 127.0.0.1:8501. `GET /api/status` (Ollama, models, GPU
+  residency, nvidia-smi VRAM, knowledge-base counts, job state, `.env` defaults; Ollama/GPU cached 10 s,
+  `?refresh=true` bypasses), `POST /api/ask` (NDJSON stream: `status`, `token`, `reset`, `final`, `error`),
+  `GET /api/search`, `POST /api/jobs` / `/api/jobs/cancel`, `GET /api/errors`, `POST /api/backup`,
+  `POST /api/restore`. Serves `frontend/dist` with an SPA fallback. Existing modules unchanged.
+- `frontend/`: Vite 8 + React 19 + TypeScript 5.9 + `@base-ui/react` 1.9, CSS modules in the Base UI demo style
+  (oklch greys, 1 px ink borders, offset shadow, light/dark/system theme), system fonts only (no CDN).
+  Ask view: streaming answers, citation chips with tooltips, collapsible evidence, metrics, warnings, stop,
+  clear (confirm dialog); settings panel (model Select with GPU note, context Select, Sliders, search-only
+  Switch, reset to `.env`); chat and settings persisted in localStorage. Knowledge base view: stat tiles,
+  collection Progress, NumberField limit, collect/update/index, rebuild (confirm dialog), cancel, error table,
+  backup/restore, Toast when a job ends.
+- `start_gtnh.bat` builds the interface when `frontend/dist` is missing or older than `frontend/src` (needs
+  Node.js LTS), falls back to Streamlit without Node, and keeps `--classic` for Streamlit.
+- Verified in the cloud workspace: `pytest` 56 passed (incl. 11 new API tests and the Streamlit UI test) with
+  all dependencies except `sentence-transformers`/`torch` (download blocked there; tests use fake embeddings);
+  `ruff check` clean; `tsc` clean; `vite build` OK; headless-Chromium screenshots of both views in light and
+  dark with no console errors, against the real API with a fake Ollama and stub index.
+- Not verified: `start_gtnh.bat` on Windows, the UI against real Ollama + the real `data/` index, collection
+  jobs started from the new UI.
 
 ## Next steps
+0. On the laptop after pulling: install Node.js LTS if missing, reinstall Python deps (adds `fastapi`,
+   `uvicorn`), run `start_gtnh.bat`, ask a few questions and run a small collection from Knowledge base.
+   If the new UI works, retire `app.py`/`--classic` and `tests/test_ui.py` in a separate change.
 1. On the laptop: `git fetch && git checkout ollama-local-migration`, reinstall
    (`.\.venv\Scripts\python -m pip install -e ".[dev]"`), run `pytest -q`.
 2. Install Ollama, run `start_gtnh.bat` (it offers to pull the model), then `cli doctor`.

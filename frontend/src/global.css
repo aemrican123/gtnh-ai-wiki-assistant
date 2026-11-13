@@ -1,0 +1,110 @@
+/* Design tokens. Modelled on the Base UI demo styles: neutral oklch greys, 14 px type, 1 px ink borders,
+   square corners and a hard offset shadow. One accent (brass) marks citations and live activity. */
+:root {
+  --ink: oklch(14.5% 0 0deg);
+  --paper: white;
+  --paper-2: oklch(98.5% 0 0deg);
+  --hover: oklch(97% 0 0deg);
+  --active: oklch(92.2% 0 0deg);
+  --line: oklch(14.5% 0 0deg);
+  --line-soft: oklch(87% 0 0deg);
+  --muted: oklch(55.6% 0 0deg);
+  --muted-2: oklch(43.9% 0 0deg);
+  --accent: oklch(55% 0.14 62deg);
+  --accent-soft: oklch(96% 0.04 80deg);
+  --ok: oklch(52.7% 0.154 150deg);
+  --warn: oklch(55.4% 0.135 66deg);
+  --warn-soft: oklch(97.3% 0.071 103deg);
+  --danger: oklch(50.5% 0.213 27.5deg);
+  --danger-soft: oklch(97.1% 0.013 17deg);
+  --shadow: 0.25rem 0.25rem 0 rgb(0 0 0 / 12%);
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'Cascadia Mono', 'Cascadia Code', Consolas, 'SF Mono', Menlo, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink: white;
+    --paper: oklch(14.5% 0 0deg);
+    --paper-2: oklch(17.5% 0 0deg);
+    --hover: oklch(26.9% 0 0deg);
+    --active: oklch(37.1% 0 0deg);
+    --line: white;
+    --line-soft: oklch(32% 0 0deg);
+    --muted: oklch(70.8% 0 0deg);
+    --muted-2: oklch(80% 0 0deg);
+    --accent: oklch(80% 0.13 75deg);
+    --accent-soft: oklch(25% 0.04 70deg);
+    --ok: oklch(76.5% 0.177 163deg);
+    --warn: oklch(82.8% 0.189 84deg);
+    --warn-soft: oklch(24% 0.05 85deg);
+    --danger: oklch(70.4% 0.191 22deg);
+    --danger-soft: oklch(24% 0.06 25deg);
+    --shadow: none;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --ink: white;
+  --paper: oklch(14.5% 0 0deg);
+  --paper-2: oklch(17.5% 0 0deg);
+  --hover: oklch(26.9% 0 0deg);
+  --active: oklch(37.1% 0 0deg);
+  --line: white;
+  --line-soft: oklch(32% 0 0deg);
+  --muted: oklch(70.8% 0 0deg);
+  --muted-2: oklch(80% 0 0deg);
+  --accent: oklch(80% 0.13 75deg);
+  --accent-soft: oklch(25% 0.04 70deg);
+  --ok: oklch(76.5% 0.177 163deg);
+  --warn: oklch(82.8% 0.189 84deg);
+  --warn-soft: oklch(24% 0.05 85deg);
+  --danger: oklch(70.4% 0.191 22deg);
+  --danger-soft: oklch(24% 0.06 25deg);
+  --shadow: none;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
