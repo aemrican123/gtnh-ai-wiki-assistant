@@ -14,8 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .answer import Answerer
@@ -23,6 +23,7 @@ from .backup import backup, restore
 from .config import Settings
 from .index import Index
 from .jobs import Jobs, writer_busy
+from .lifecycle import Lifecycle
 from .llm import LLMError, OllamaClient
 from .store import Store
 
@@ -74,8 +75,12 @@ def source_view(n, chunk):
     }
 
 
-def create_app(settings=None, client_factory=None, index_factory=None, chat_client_factory=None, gpu=None):
-    """Build the app. The factories exist so tests can run without Ollama or an embedding model."""
+def create_app(
+    settings=None, client_factory=None, index_factory=None, chat_client_factory=None, gpu=None, lifecycle=None
+):
+    """Build the app. The factories exist so tests can run without Ollama or an embedding model.
+
+    ``lifecycle`` (optional) is told about every request so the app can stop when its window closes."""
     settings = (settings or Settings()).prepare()
     store = Store(settings.data_dir)
     holder = {}
@@ -140,6 +145,22 @@ def create_app(settings=None, client_factory=None, index_factory=None, chat_clie
     app = FastAPI(title="GTNH Field Guide", docs_url="/api/docs", openapi_url="/api/openapi.json")
     app.state.jobs = jobs
     app.state.store = store
+    app.state.settings = settings
+    app.state.models_used = {settings.llm_model}
+    if lifecycle is not None:
+        lifecycle.busy = lambda: jobs.running
+
+        @app.middleware("http")
+        async def track_activity(request: Request, call_next):
+            lifecycle.seen()
+            return await call_next(request)
+
+    @app.post("/api/closing", status_code=204)
+    def closing():
+        """Beacon sent by the interface when its window closes or reloads."""
+        if lifecycle is not None:
+            lifecycle.closing()
+        return Response(status_code=204)
 
     @app.get("/api/status")
     def status(refresh: bool = False):
@@ -179,6 +200,7 @@ def create_app(settings=None, client_factory=None, index_factory=None, chat_clie
             if value is not None
         }
         current = settings.model_copy(update=overrides)
+        app.state.models_used.add(current.llm_model)
         history = [turn.model_dump() for turn in request.history]
         events = queue.Queue()
 
@@ -226,11 +248,17 @@ def create_app(settings=None, client_factory=None, index_factory=None, chat_clie
             finally:
                 events.put(None)
 
+        if lifecycle is not None:
+            lifecycle.stream_started()
         threading.Thread(target=work, name="gtnh-answer", daemon=True).start()
 
         def stream():
-            while (item := events.get()) is not None:
-                yield item
+            try:
+                while (item := events.get()) is not None:
+                    yield item
+            finally:
+                if lifecycle is not None:
+                    lifecycle.stream_finished()
 
         return StreamingResponse(stream(), media_type="application/x-ndjson")
 
@@ -291,14 +319,59 @@ def create_app(settings=None, client_factory=None, index_factory=None, chat_clie
     return app
 
 
+def unload_models(app):
+    """Free GPU memory for the models this app used, if they are still loaded."""
+    settings = app.state.settings
+    client = OllamaClient(settings.ollama_host, timeout=10)
+    try:
+        loaded = {m["name"] for m in client.loaded_models()}
+        for model in app.state.models_used & loaded:
+            client.unload(model)
+    except LLMError:
+        pass
+
+
+def serve(port=8501, exit_when_closed=False, on_ready=None):
+    """Run the app until stopped (Ctrl+C), or, with ``exit_when_closed``, until its window has closed."""
+    import uvicorn
+
+    holder = {}
+    lifecycle = (
+        Lifecycle(on_idle=lambda: setattr(holder["server"], "should_exit", True))
+        if exit_when_closed
+        else None
+    )
+    app = create_app(lifecycle=lifecycle)
+    # Loopback only: the app has no authentication and must not be reachable from the network.
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning"))
+    holder["server"] = server
+    if on_ready:
+
+        def wait_until_started():
+            while not server.started and not server.should_exit:
+                time.sleep(0.1)
+            if server.started:
+                on_ready()
+
+        threading.Thread(target=wait_until_started, daemon=True).start()
+    if lifecycle is not None:
+        lifecycle.start()
+    try:
+        server.run()
+    finally:
+        if exit_when_closed:
+            unload_models(app)
+    return server.started
+
+
 def main():
     parser = argparse.ArgumentParser(description="Serve the GTNH Field Guide interface on this computer")
     parser.add_argument("--port", type=int, default=8501)
+    parser.add_argument(
+        "--exit-when-closed", action="store_true", help="stop and unload the model once the app window closes"
+    )
     args = parser.parse_args()
-    import uvicorn
-
-    # Loopback only: the app has no authentication and must not be reachable from the network.
-    uvicorn.run(create_app(), host="127.0.0.1", port=args.port, log_level="warning")
+    serve(args.port, args.exit_when_closed)
 
 
 if __name__ == "__main__":

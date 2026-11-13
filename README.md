@@ -49,6 +49,15 @@ In PowerShell, use `npm.cmd` rather than `npm`: Windows' default execution polic
 
 For interface development, run the API as above and `npm.cmd run dev` in `frontend/` (Vite proxies `/api` to port 8501).
 
+### Desktop shortcut (recommended)
+
+Run **`install_shortcuts.bat`** once. It puts a **GTNH Field Guide** shortcut with the gear icon on your desktop and in the Start menu (right-click it to pin it to the taskbar).
+
+- **Open:** double-click the shortcut. The app opens in its own window (Edge app mode, no tabs or address bar) and no console window appears. If the app is already running, it just opens another window.
+- **Close:** close the window. About 15 seconds later the app stops and unloads the model from GPU memory. It keeps running while a collection or indexing job is in progress, and stops once that finishes.
+- If something needs you first (Ollama missing, the model not downloaded, the interface not built or updated), a console window opens and walks you through it, then the app window opens.
+- Problems are written to `data\launcher.log`. `install_shortcuts.bat --remove` deletes the shortcuts. Ollama itself keeps running in the background for other apps; `stop_gtnh.bat --all` stops it too.
+
 ### 5. Check everything
 
 ```powershell

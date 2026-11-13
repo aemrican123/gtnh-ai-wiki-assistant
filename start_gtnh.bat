@@ -2,6 +2,7 @@
 rem GTNH Field Guide launcher: checks Ollama and the model, then starts the local web app.
 rem   start_gtnh.bat            the React interface (built automatically when Node.js is installed)
 rem   start_gtnh.bat --classic  the previous Streamlit interface
+rem   start_gtnh.bat --prepare  only check, download and build, then exit (used by the desktop shortcut)
 setlocal EnableExtensions
 cd /d "%~dp0"
 title GTNH Field Guide
@@ -9,6 +10,7 @@ set "PORT=8501"
 set "PY=.venv\Scripts\python.exe"
 set "UI=react"
 if /i "%~1"=="--classic" set "UI=classic"
+if /i "%~1"=="--prepare" set "PREPARE=1"
 
 echo [1/5] Checking the Python environment...
 if not exist "%PY%" (
@@ -87,6 +89,7 @@ if exist "frontend\dist\index.html" (
 )
 echo   The React interface is not built yet and Node.js is not installed.
 echo   Install Node.js LTS once from https://nodejs.org to use it.
+if defined PREPARE goto :fail
 echo   Starting the classic Streamlit interface for now...
 set "UI=classic"
 goto :start_app
@@ -113,6 +116,12 @@ echo   [X] The interface build failed. See the messages above, or run: start_gtn
 goto :fail
 
 :start_app
+if defined PREPARE (
+  echo.
+  echo   Everything is ready. The GTNH Field Guide window will open now.
+  timeout /t 3 >nul
+  exit /b 0
+)
 echo [5/5] Starting the GTNH Field Guide on http://127.0.0.1:%PORT% ...
 powershell -NoProfile -Command "if (Get-NetTCPConnection -LocalPort %PORT% -State Listen -ErrorAction SilentlyContinue) { exit 1 }"
 if errorlevel 1 (

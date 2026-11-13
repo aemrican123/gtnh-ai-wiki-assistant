@@ -15,6 +15,8 @@ Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the wa
 - `api.py` — FastAPI on 127.0.0.1: status, NDJSON streaming answers, search, jobs, backup/restore; serves
   `frontend/dist`. `frontend/` — Vite + React + TypeScript + `@base-ui/react`, CSS modules styled after shadcn/ui
   (tokens in `frontend/src/global.css`), bundled Geist fonts, no CDN assets.
+- `launcher.py` (desktop shortcut, run with pythonw), `lifecycle.py` (stop when the window closes),
+  `shortcuts.py` (creates the .lnk files; `install_shortcuts.bat`).
 - `jobs.py`, `cli.py`, `backup.py` — background ingest, command line (`doctor`, `ask`, …), backup/restore.
 
 ## Rules

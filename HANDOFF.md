@@ -47,6 +47,19 @@ Not yet verified (needs the laptop):
 - Not verified: `start_gtnh.bat` on Windows, the UI against real Ollama + the real `data/` index, collection
   jobs started from the new UI.
 
+## Desktop shortcut (built 2026-11-14, not yet run on the laptop)
+- `install_shortcuts.bat` → `gtnh_assistant.shortcuts`: desktop + Start-menu `GTNH Field Guide.lnk` (icon
+  `assets/gtnh.ico`) running `.venv\Scripts\pythonw.exe -m gtnh_assistant.launcher` in the project folder.
+- `launcher.py`: reuses a running app, starts `ollama serve` hidden if needed, otherwise hands over to
+  `start_gtnh.bat --prepare` in a console (Ollama missing, model missing, UI build), checks port 8501, then
+  `api.serve(exit_when_closed=True)` and opens an Edge/Chrome `--app` window. Logs to `data/launcher.log`.
+- `lifecycle.py`: the UI sends a `pagehide` beacon to `/api/closing`; with no request for 15 s afterwards (or
+  300 s of silence) and no job or answer stream running, uvicorn stops and the used models are unloaded.
+- Verified here: 63 tests pass (incl. 7 new); real uvicorn run exits 16 s after the beacon; in headless
+  Chromium a reload keeps it running and leaving the page stops it. Headless `page.close()` does not send the
+  beacon (test-tool quirk), so the 300 s fallback matters if a real browser ever skips it.
+- Not verified: the shortcut, pythonw launch, Edge app window and message boxes on Windows.
+
 ## Next steps
 0. On the laptop after pulling: install Node.js LTS if missing, reinstall Python deps (adds `fastapi`,
    `uvicorn`), run `start_gtnh.bat`, ask a few questions and run a small collection from Knowledge base.
