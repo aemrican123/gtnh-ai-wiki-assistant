@@ -58,7 +58,9 @@ export function App() {
         <Tabs.Root className={styles.Shell} value={tab} onValueChange={(v) => setTab(v as 'ask' | 'kb')}>
           <header className={styles.Header}>
             <div className={styles.Brand}>
-              <GearIcon className={styles.BrandMark} />
+              <span className={styles.BrandMark}>
+                <GearIcon />
+              </span>
               <div>
                 <div className={styles.BrandName}>GTNH Field Guide</div>
                 <div className={styles.BrandTag}>Local wiki companion · from steam to the Stargate</div>
@@ -77,14 +79,14 @@ export function App() {
             <div className={styles.HeaderEnd}>
               <StatusPills status={status} offline={offline} />
               <Tip content="Check Ollama again">
-                <Button variant="ghost" size="icon" aria-label="Refresh status" onClick={() => reload(true)}>
+                <Button variant="ghost" size="icon-sm" aria-label="Refresh status" onClick={() => reload(true)}>
                   <RefreshIcon />
                 </Button>
               </Tip>
               <Tip content={`Theme: ${theme}`}>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="icon-sm"
                   aria-label={`Theme: ${theme}. Switch to ${nextTheme[theme]}`}
                   onClick={() => setTheme(nextTheme[theme])}
                 >

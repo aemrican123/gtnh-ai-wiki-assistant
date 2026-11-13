@@ -105,7 +105,13 @@ export function KnowledgeBase({ status, reload }: { status: Status | null; reloa
             <NumberInput label="Article limit (0 = all remaining)" value={limit} min={0} step={10} onChange={setLimit} />
             <div className={styles.Actions}>
               {ACTIONS.map((a) => (
-                <Button key={a.kind} title={a.hint} disabled={running} onClick={() => start(a.kind)}>
+                <Button
+                  key={a.kind}
+                  title={a.hint}
+                  variant={a.kind === 'scrape' ? 'primary' : 'default'}
+                  disabled={running}
+                  onClick={() => start(a.kind)}
+                >
                   {a.label}
                 </Button>
               ))}

@@ -30,8 +30,9 @@ Not yet verified (needs the laptop):
   `?refresh=true` bypasses), `POST /api/ask` (NDJSON stream: `status`, `token`, `reset`, `final`, `error`),
   `GET /api/search`, `POST /api/jobs` / `/api/jobs/cancel`, `GET /api/errors`, `POST /api/backup`,
   `POST /api/restore`. Serves `frontend/dist` with an SPA fallback. Existing modules unchanged.
-- `frontend/`: Vite 8 + React 19 + TypeScript 5.9 + `@base-ui/react` 1.9, CSS modules in the Base UI demo style
-  (oklch greys, 1 px ink borders, offset shadow, light/dark/system theme), system fonts only (no CDN).
+- `frontend/`: Vite 8 + React 19 + TypeScript 5.9 + `@base-ui/react` 1.9, CSS modules styled after shadcn/ui
+  (owner's choice, 2026-11-14: neutral oklch tokens, rounded corners, soft shadows, pill tabs, 3 px focus ring,
+  light/dark/system theme). Geist fonts are bundled from npm (`@fontsource-variable/*`), so nothing loads from a CDN.
   Ask view: streaming answers, citation chips with tooltips, collapsible evidence, metrics, warnings, stop,
   clear (confirm dialog); settings panel (model Select with GPU note, context Select, Sliders, search-only
   Switch, reset to `.env`); chat and settings persisted in localStorage. Knowledge base view: stat tiles,

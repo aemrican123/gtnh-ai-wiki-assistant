@@ -13,7 +13,8 @@ Read `HANDOFF.md` for current state and `DECISIONS.md` for why things are the wa
 - `llm.py` — stdlib-only Ollama HTTP client (chat with streaming + tools, tags, ps, errors).
 - `answer.py` — retrieval → context budgeting → Ollama chat with a `search_wiki` tool → citation validation.
 - `api.py` — FastAPI on 127.0.0.1: status, NDJSON streaming answers, search, jobs, backup/restore; serves
-  `frontend/dist`. `frontend/` — Vite + React + TypeScript + `@base-ui/react`, CSS modules, no CDN assets.
+  `frontend/dist`. `frontend/` — Vite + React + TypeScript + `@base-ui/react`, CSS modules styled after shadcn/ui
+  (tokens in `frontend/src/global.css`), bundled Geist fonts, no CDN assets.
 - `jobs.py`, `cli.py`, `backup.py` — background ingest, command line (`doctor`, `ask`, …), backup/restore.
 
 ## Rules
