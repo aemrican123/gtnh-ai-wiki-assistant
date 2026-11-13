@@ -219,7 +219,7 @@ with admin_tab:
         if external:
             st.caption(store.get("progress", "Check the command's terminal for progress."))
         if jobs.running or external:
-            total = counts["done"] + counts["pending"] + counts["errors"]
+            total = counts["done"] + counts["pending"] + counts["errors"] + counts.get("skipped", 0)
             st.progress(
                 counts["done"] / max(1, total), text="Collection checkpoints are saved after each page"
             )

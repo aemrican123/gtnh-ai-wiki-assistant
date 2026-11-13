@@ -6,7 +6,7 @@ from protego import Protego
 
 from gtnh_assistant.config import Settings
 from gtnh_assistant.extract import BASE, article_url, extract
-from gtnh_assistant.scrape import AccessDenied, Fetcher, crawl
+from gtnh_assistant.scrape import AccessDenied, Disallowed, Fetcher, crawl
 from gtnh_assistant.store import Store
 
 HTML = """<html><head><link rel="canonical" href="https://wiki.gtnewhorizons.com/wiki/Test"/>
@@ -117,3 +117,26 @@ def test_page_title_recreated_under_new_id(tmp_path):
     store.save_article(extract(newer, BASE + "/wiki/Test"), newer)
     assert store.stats()["articles"] == 1
     assert store.article("43").title == "Test machine"
+
+
+def test_redirect_to_disallowed_page_is_skipped_not_fatal(tmp_path):
+    store = Store(tmp_path)
+
+    def handler(request):
+        if request.url.path == "/robots.txt":
+            return httpx.Response(200, text="User-agent: *\nDisallow: /wiki/Special:\n")
+        if request.url.path == "/wiki/Screwdriver":
+            location = BASE + "/wiki/Special:MyLanguage/GT_Tools#Screwdriver"
+            return httpx.Response(301, headers={"location": location})
+        return httpx.Response(200, text=HTML)
+
+    fetcher = Fetcher(interval=0, client=httpx.Client(transport=httpx.MockTransport(handler)))
+    seeds = [BASE + "/wiki/Screwdriver", BASE + "/wiki/Test"]
+    result = crawl(store, Settings(data_dir=tmp_path), seeds=seeds, limit=2, fetcher=fetcher)
+    assert result["processed"] == 2
+    stats = store.stats()
+    assert stats["skipped"] == 1 and stats["articles"] == 1 and stats["errors"] == 0
+
+
+def test_disallowed_is_still_an_access_denied_for_discovery():
+    assert issubclass(Disallowed, AccessDenied)

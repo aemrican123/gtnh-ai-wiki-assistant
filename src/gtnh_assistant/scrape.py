@@ -13,7 +13,11 @@ USER_AGENT = "GTNHKnowledgeAssistant/0.1 (personal local wiki index)"
 
 
 class AccessDenied(RuntimeError):
-    pass
+    """The site refused access (or its rules could not be read): stop collecting entirely."""
+
+
+class Disallowed(AccessDenied):
+    """robots.txt or the redirect policy rules out one URL. Skip that URL; keep collecting the rest."""
 
 
 class Fetcher:
@@ -86,7 +90,7 @@ class Fetcher:
                 and parts.path.startswith("/gtnhwiki/sitemaps/")
             )
             if parts.scheme != "https" or (parts.netloc != urlsplit(BASE).netloc and not cdn_sitemap):
-                raise AccessDenied("Cross-site redirect refused")
+                raise Disallowed(f"Cross-site redirect refused: {url}")
             rules = self.rules
             if cdn_sitemap:
                 if self.cdn_rules is None:
@@ -101,7 +105,7 @@ class Fetcher:
                         self.interval = max(self.interval, float(delay))
                 rules = self.cdn_rules
             if not rules.can_fetch(url, USER_AGENT):
-                raise AccessDenied(f"robots.txt disallows {url}")
+                raise Disallowed(f"robots.txt disallows {url}")
             response = self._get(url, headers)
             if response.status_code in {301, 302, 303, 307, 308}:
                 url = urljoin(url, response.headers["location"])
@@ -170,6 +174,10 @@ def crawl(
                 store.finish_url(
                     url, etag=response.headers.get("etag"), modified=response.headers.get("last-modified")
                 )
+            except Disallowed as exc:
+                # e.g. an article that redirects to a disallowed Special: page. Never fetched; skip it.
+                store.finish_url(url, "skipped", str(exc)[:500])
+                progress(f"Skipped {url}: {exc}")
             except (AccessDenied, InterruptedError):
                 raise
             except Exception as exc:
