@@ -1,0 +1,223 @@
+.Scroll {
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.Page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+}
+
+.Heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.Title {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.Stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 0;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.Stat {
+  padding: 0.75rem 1rem;
+
+  & + & {
+    border-left: 1px solid var(--line-soft);
+  }
+
+  dt {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0.125rem 0 0;
+    font-family: var(--mono);
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &[data-alert] dd {
+    color: var(--danger);
+  }
+}
+
+.Card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+}
+
+.CardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.CardTitle {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+}
+
+.JobState {
+  font-size: 0.8125rem;
+  color: var(--muted-2);
+
+  &[data-running]::before {
+    content: '';
+    display: inline-block;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    margin-right: 0.375rem;
+    background: var(--accent);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.Controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.Actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.Error {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.Result {
+  max-height: 12rem;
+  margin: 0;
+  padding: 0.75rem;
+  overflow: auto;
+  border: 1px solid var(--line-soft);
+  background: var(--paper-2);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+
+.Disclosure {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+.Caret {
+  transition: rotate 150ms ease-out;
+
+  [data-panel-open] > & {
+    rotate: 90deg;
+  }
+}
+
+.DisclosurePanel {
+  overflow: auto;
+  max-height: 24rem;
+}
+
+.Table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th,
+  td {
+    padding: 0.375rem 0.5rem;
+    border-bottom: 1px solid var(--line-soft);
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--muted-2);
+  }
+
+  td:first-child {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    width: 45%;
+  }
+}
+
+.RestoreGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.InputField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.Footer {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}

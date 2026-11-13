@@ -1,0 +1,562 @@
+/* Shared controls: buttons, select, slider, switch, number field, tooltip, dialog, toast, progress. */
+
+.Button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2rem;
+  padding: 0 0.75rem;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 0.875rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+
+  @media (hover: hover) {
+    &:hover:not([data-disabled], :disabled) {
+      background: var(--hover);
+    }
+  }
+
+  &:active:not([data-disabled], :disabled) {
+    background: var(--active);
+  }
+
+  &:disabled,
+  &[data-disabled] {
+    color: var(--muted);
+    border-color: var(--muted);
+  }
+
+  &[data-variant='primary'] {
+    background: var(--ink);
+    color: var(--paper);
+
+    @media (hover: hover) {
+      &:hover:not([data-disabled], :disabled) {
+        background: var(--muted-2);
+      }
+    }
+
+    &:disabled {
+      background: var(--line-soft);
+      color: var(--muted);
+      border-color: var(--line-soft);
+    }
+  }
+
+  &[data-variant='danger'] {
+    color: var(--danger);
+  }
+
+  &[data-variant='ghost'] {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  &[data-size='icon'] {
+    width: 2rem;
+    padding: 0;
+  }
+}
+
+.Label {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  cursor: default;
+}
+
+.Hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  color: var(--muted);
+}
+
+/* Select */
+.SelectTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.25rem 0 0.5rem;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--paper);
+  font-size: 0.875rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+
+  @media (hover: hover) {
+    &:hover:not([data-disabled]) {
+      background: var(--hover);
+    }
+  }
+
+  &[data-popup-open] {
+    background: var(--hover);
+  }
+}
+
+.SelectValue {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+.Positioner {
+  outline: 0;
+  z-index: 20;
+  user-select: none;
+}
+
+.SelectPopup {
+  min-width: var(--anchor-width);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  transform-origin: var(--transform-origin);
+  transition:
+    scale 100ms ease-out,
+    opacity 100ms ease-out;
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    scale: 0.98;
+    opacity: 0;
+  }
+
+  &[data-side='none'] {
+    min-width: calc(var(--anchor-width) + 1.75rem);
+    transition: none;
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.SelectList {
+  padding: 0.25rem 0;
+  max-height: var(--available-height);
+  overflow-y: auto;
+  scroll-padding-block: 1.5rem;
+}
+
+.SelectItem {
+  display: grid;
+  grid-template-columns: 1rem 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 1rem 0.375rem 0.625rem;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  outline: 0;
+  cursor: default;
+  user-select: none;
+
+  &[data-highlighted] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+}
+
+.SelectItemNote {
+  font-family: var(--font);
+  font-size: 0.75rem;
+  color: var(--muted);
+
+  [data-highlighted] > & {
+    color: inherit;
+    opacity: 0.75;
+  }
+}
+
+/* Slider */
+.SliderField {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 0.375rem;
+  align-items: baseline;
+}
+
+.SliderValue {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  color: var(--muted-2);
+}
+
+.SliderControl {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 0;
+  touch-action: none;
+  user-select: none;
+}
+
+.SliderTrack {
+  position: relative;
+  width: 100%;
+  height: 0.25rem;
+  background: var(--line-soft);
+  user-select: none;
+}
+
+.SliderIndicator {
+  background: var(--ink);
+  user-select: none;
+}
+
+.SliderThumb {
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  user-select: none;
+
+  &:has(:focus-visible) {
+    outline: 2px solid var(--ink);
+    outline-offset: 1px;
+  }
+
+  &[data-dragging] {
+    background: var(--ink);
+  }
+}
+
+/* Switch */
+.SwitchLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  cursor: default;
+}
+
+.Switch {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.25rem;
+  padding: 2px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--paper);
+  transition: background-color 150ms ease;
+
+  &[data-checked] {
+    background: var(--ink);
+  }
+}
+
+.SwitchThumb {
+  width: 0.875rem;
+  height: 0.875rem;
+  background: var(--ink);
+  transition: translate 150ms ease;
+
+  &[data-checked] {
+    translate: 1rem 0;
+    background: var(--paper);
+  }
+}
+
+/* Number field */
+.NumberGroup {
+  display: flex;
+  height: 2rem;
+}
+
+.NumberStep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--paper);
+  cursor: default;
+  user-select: none;
+
+  @media (hover: hover) {
+    &:hover:not([data-disabled]) {
+      background: var(--hover);
+    }
+  }
+
+  &:active:not([data-disabled]) {
+    background: var(--active);
+  }
+}
+
+.NumberInput {
+  width: 5rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Text input */
+.Input {
+  width: 100%;
+  height: 2rem;
+  padding: 0 0.5rem;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+
+  &::placeholder {
+    color: var(--muted);
+    font-family: var(--font);
+  }
+}
+
+/* Tooltip */
+.TooltipPopup {
+  max-width: 22rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  transform-origin: var(--transform-origin);
+  transition:
+    transform 100ms ease-out,
+    opacity 100ms ease-out;
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  &[data-instant] {
+    transition: none;
+  }
+}
+
+/* Dialog */
+.Backdrop {
+  position: fixed;
+  inset: 0;
+  min-height: 100dvh;
+  background: black;
+  opacity: 0.2;
+  transition: opacity 150ms cubic-bezier(0.45, 1.005, 0, 1.005);
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+}
+
+.DialogPopup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 26rem;
+  max-width: calc(100vw - 3rem);
+  translate: -50% -50%;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  transition: all 150ms;
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+    scale: 0.98;
+  }
+}
+
+.DialogTitle {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+}
+
+.DialogDescription {
+  margin: 0 0 1.25rem;
+  color: var(--muted-2);
+}
+
+.DialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Progress */
+.Progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 0.375rem;
+}
+
+.ProgressLabel {
+  font-size: 0.875rem;
+  color: var(--muted-2);
+}
+
+.ProgressValue {
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+}
+
+.ProgressTrack {
+  grid-column: 1 / -1;
+  height: 0.5rem;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.ProgressIndicator {
+  display: block;
+  background: var(--accent);
+  transition: width 500ms;
+}
+
+/* Toast */
+.ToastViewport {
+  position: fixed;
+  z-index: 30;
+  width: calc(100vw - 2rem);
+  bottom: 1rem;
+  right: 1rem;
+
+  @media (min-width: 500px) {
+    bottom: 2rem;
+    right: 2rem;
+    width: 22.5rem;
+  }
+}
+
+.Toast {
+  --gap: 0.75rem;
+  --peek: 0.75rem;
+  --scale: calc(max(0, 1 - (var(--toast-index) * 0.1)));
+  --shrink: calc(1 - var(--scale));
+  --height: var(--toast-frontmost-height, var(--toast-height));
+  --offset-y: calc(
+    var(--toast-offset-y) * -1 + (var(--toast-index) * var(--gap) * -1) + var(--toast-swipe-movement-y)
+  );
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  transform-origin: bottom center;
+  user-select: none;
+  cursor: default;
+  z-index: calc(1000 - var(--toast-index));
+  height: var(--height);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.5s,
+    height 0.15s;
+  transform: translateX(var(--toast-swipe-movement-x))
+    translateY(
+      calc(var(--toast-swipe-movement-y) - (var(--toast-index) * var(--peek)) - (var(--shrink) * var(--height)))
+    )
+    scale(var(--scale));
+
+  &[data-expanded] {
+    transform: translateX(var(--toast-swipe-movement-x)) translateY(var(--offset-y));
+    height: var(--toast-height);
+  }
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    transform: translateY(150%);
+  }
+
+  &[data-limited],
+  &[data-ending-style] {
+    opacity: 0;
+  }
+
+  &[data-type='error'] {
+    border-color: var(--danger);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: calc(var(--gap) + 1px);
+  }
+}
+
+.ToastContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  overflow: hidden;
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &[data-behind] {
+    opacity: 0;
+  }
+
+  &[data-expanded] {
+    opacity: 1;
+  }
+}
+
+.ToastText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.ToastTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.ToastDescription {
+  margin: 0;
+  color: var(--muted-2);
+  overflow-wrap: anywhere;
+}

@@ -2,6 +2,23 @@
 
 Newest first. Each entry: decision, reason, consequences.
 
+## 2026-11-14 — React + Base UI interface served by a local FastAPI app
+
+**Decision.** The default interface is a Vite + React + TypeScript app using `@base-ui/react` (`frontend/`),
+served together with a small FastAPI API (`api.py`) on 127.0.0.1:8501. Streamlit `app.py` stays available as
+`start_gtnh.bat --classic` until the new interface is verified on the laptop. Built files (`frontend/dist`) are
+not committed; the launcher builds them with Node.js when missing or out of date.
+
+**Reason.** The owner chose a rebuilt React + Base UI interface over restyling Streamlit. FastAPI + uvicorn
+are free, local and small, and `TestClient` makes the API testable without Ollama. Answers stream as NDJSON
+from the existing `Answerer` callbacks, so no answering or retrieval code changed. Loopback binding only,
+because there is no authentication. Chat history lives in the browser (localStorage), as Streamlit history
+was per session before.
+
+**Consequences.** New Python dependencies `fastapi` and `uvicorn`; Node.js LTS is needed to build the
+interface (not to run it). Stopping an answer in the UI closes the stream; the model call finishes in the
+background and its usage row is still recorded.
+
 ## 2026-11-13 — A robots-disallowed URL is skipped, not fatal
 
 **Decision.** `Disallowed` (a subclass of `AccessDenied`) marks a single URL that robots.txt or the redirect

@@ -1,0 +1,238 @@
+.Layout {
+  display: grid;
+  grid-template-columns: 18rem 1fr;
+  height: 100%;
+  min-height: 0;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.Aside {
+  min-height: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--line);
+  background: var(--paper-2);
+
+  @media (max-width: 860px) {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    top: 3.5rem;
+    bottom: 0;
+    left: 0;
+    width: min(20rem, 100vw);
+    box-shadow: var(--shadow);
+
+    [data-settings] > & {
+      display: block;
+    }
+  }
+}
+
+.Settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.Group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+
+  & + & {
+    border-top: 1px solid var(--line-soft);
+  }
+}
+
+.GroupTitle {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.Field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.FieldWarning {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--warn);
+
+  code {
+    font-family: var(--mono);
+  }
+}
+
+.Main {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+.Scroll {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.Thread {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 1.5rem;
+}
+
+.Notice {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--warn);
+  background: var(--warn-soft);
+}
+
+.LinkButton {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.Welcome {
+  padding: 2.5rem 0 1rem;
+}
+
+.WelcomeTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.WelcomeText {
+  max-width: 34rem;
+  margin: 0 0 1.5rem;
+  color: var(--muted-2);
+}
+
+.Suggestions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.5rem;
+}
+
+.Suggestion {
+  padding: 0.75rem;
+  margin: 0;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  text-align: left;
+  cursor: default;
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--hover);
+      box-shadow: var(--shadow);
+    }
+  }
+
+  &:active {
+    background: var(--active);
+  }
+}
+
+.Question {
+  align-self: flex-end;
+  max-width: 85%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--line);
+  background: var(--paper-2);
+  box-shadow: var(--shadow);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.Composer {
+  max-width: 48rem;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1.5rem 1rem;
+}
+
+.ComposerBox {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+
+  &:focus-within {
+    outline: 2px solid var(--ink);
+    outline-offset: -1px;
+  }
+}
+
+.Textarea {
+  flex: 1;
+  min-height: 2rem;
+  max-height: 12rem;
+  padding: 0.375rem 0.25rem;
+  margin: 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  font-size: 0.9375rem;
+  line-height: 1.25rem;
+  field-sizing: content;
+
+  &::placeholder {
+    color: var(--muted);
+  }
+}
+
+.ComposerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2rem;
+  margin-top: 0.375rem;
+}
+
+.ComposerHint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.ComposerActions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.SettingsToggle {
+  display: none !important;
+
+  @media (max-width: 860px) {
+    display: inline-flex !important;
+  }
+}

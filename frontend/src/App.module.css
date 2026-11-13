@@ -1,0 +1,199 @@
+.Shell {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+.Header {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr auto;
+    row-gap: 0;
+
+    & > :last-child {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+      padding-bottom: 0.5rem;
+    }
+  }
+}
+
+.Brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  padding: 0.625rem 0;
+}
+
+.BrandMark {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--accent);
+}
+
+.BrandName {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.BrandTag {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.TabList {
+  position: relative;
+  display: flex;
+  align-self: stretch;
+}
+
+.Tab {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 100%;
+  min-height: 3rem;
+  padding: 0 0.75rem;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted-2);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--ink);
+    }
+  }
+
+  &[data-active] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+}
+
+.TabIndicator {
+  position: absolute;
+  bottom: -1px;
+  left: var(--active-tab-left);
+  width: var(--active-tab-width);
+  height: 2px;
+  background: var(--ink);
+  transition:
+    left 150ms ease-in-out,
+    width 150ms ease-in-out;
+}
+
+.LiveDot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.HeaderEnd {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.Pills {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.375rem;
+  min-width: 0;
+  margin-right: 0.25rem;
+  overflow: hidden;
+}
+
+.Optional {
+  @media (max-width: 1180px) {
+    display: none;
+  }
+}
+
+.Pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--line-soft);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--muted-2);
+
+  &[data-state='ok'] .Dot {
+    background: var(--ok);
+  }
+
+  &[data-state='warn'] {
+    border-color: var(--warn);
+    color: var(--warn);
+
+    .Dot {
+      background: var(--warn);
+    }
+  }
+
+  &[data-state='error'] {
+    border-color: var(--danger);
+    color: var(--danger);
+
+    .Dot {
+      background: var(--danger);
+    }
+  }
+}
+
+.Dot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  background: var(--muted);
+}
+
+.Banner {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--danger);
+  background: var(--danger-soft);
+  color: var(--danger);
+
+  code {
+    font-family: var(--mono);
+  }
+}
+
+.Panel {
+  min-height: 0;
+  outline: 0;
+  overflow: hidden;
+
+  &[hidden] {
+    display: none;
+  }
+}
