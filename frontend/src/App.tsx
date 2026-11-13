@@ -46,6 +46,13 @@ export function App() {
   const [prefs, setPrefs] = useStored<Preferences>('gtnh.preferences', { options: {}, searchOnly: false });
 
   React.useEffect(() => {
+    // Tell the local server this window is going away; it shuts down if no window comes back.
+    const bye = () => navigator.sendBeacon('/api/closing');
+    window.addEventListener('pagehide', bye);
+    return () => window.removeEventListener('pagehide', bye);
+  }, []);
+
+  React.useEffect(() => {
     if (theme === 'system') delete document.documentElement.dataset.theme;
     else document.documentElement.dataset.theme = theme;
   }, [theme]);

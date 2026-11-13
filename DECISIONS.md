@@ -2,6 +2,22 @@
 
 Newest first. Each entry: decision, reason, consequences.
 
+## 2026-11-14 — Desktop shortcut that behaves like an app
+
+**Decision.** A desktop/Start-menu shortcut runs a windowless Python launcher (`pythonw`) that serves the app
+and opens it as an Edge app window. Closing the window stops the server and unloads the model: the page sends
+a beacon on `pagehide`; 15 s without another request (or 300 s of total silence) ends the process, unless a
+job or answer is running. Setup problems are handed to `start_gtnh.bat --prepare` in a visible console.
+
+**Reason.** The owner wants to open and close it like a normal program. pythonw avoids a console without
+VBScript (being phased out of Windows) or a packaged executable. The grace period survives reloads and the
+fallback covers a lost beacon; browsers throttle hidden windows to about one poll per minute, so the fallback
+must stay well above that. Shortcuts are created with PowerShell `-EncodedCommand`, which the script
+execution policy does not block and which needs no quoting.
+
+**Consequences.** `start_gtnh.bat` still works as before (console, no auto-exit). Ollama started by the
+launcher keeps running after the app closes, like the Ollama tray app.
+
 ## 2026-11-14 — Interface styled after shadcn/ui
 
 **Decision.** The interface uses shadcn/ui's look (neutral oklch tokens, `--radius` 0.625rem, soft shadows,
